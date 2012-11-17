@@ -1,7 +1,7 @@
-Waarp FTP Client for R66
-========================
+Waarp Proxy R66
+=============
 
-You will find in this web site the sub project Waarp FTP Client for R66.
+You will find in this web site the sub project Waarp Proxy R66.
 
 The global license is GPL V3.
 
@@ -28,7 +28,7 @@ Packages
  * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpFtpClient) [Waarp FTP Client for Waarp R66 and Waarp Gateway](http://waarp.github.com/WaarpFtpClient)
  * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpProxyR66) [Waarp Proxy/Reverse Proxy for R66 protocol](http://waarp.github.com/WaarpProxyR66)
  * [![View on GitHub](http://waarp.github.com/Waarp/res/waarp/octocaticon.png "View on GitHub")](https://www.github.com/waarp/WaarpThrift) [Waarp Thrift interface for R66](http://waarp.github.com/WaarpThrift)
- 
+
 Support
 -------
 

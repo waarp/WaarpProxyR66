@@ -1,9 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>WaarpFtpClient</artifactId>
+  <artifactId>WaarpProxyR66</artifactId>
   <version>1.0.0</version>
-  <name>Ftp R66 client </name>
-  <url>http://waarp.github.com/WaarpFtpClient</url>
+  <name>Waarp Proxy in R66 protocol</name>
+  <description>Waarp Proxy in R66 protocol</description>
+  <url>http://waarp.github.com/WaarpProxyR66</url>
   <inceptionYear>2009</inceptionYear>
   <parent>
     <groupId>Waarp</groupId>
@@ -12,12 +13,12 @@
   </parent>
   <issueManagement>
 	<system>GitHub</system>
-  	<url>https://github.com/waarp/WaarpFtpClient/issues/</url>
+  	<url>https://github.com/waarp/WaarpProxyR66/issues/</url>
   </issueManagement>
   <scm>
-  	<connection>scm:git:git://github.com/waarp/WaarpFtpClient.git</connection>
-  	<developerConnection>scm:git:git@github.com:YourID/WaarpFtpClient.git</developerConnection>
-  	<url>https://github.com/waarp/WaarpFtpClient</url>
+  	<connection>scm:git:git://github.com/waarp/WaarpProxyR66.git</connection>
+  	<developerConnection>scm:git:git@github.com:YourID/WaarpProxyR66.git</developerConnection>
+  	<url>https://github.com/waarp/WaarpProxyR66</url>
   </scm>
   <licenses>
   	<license>
@@ -40,57 +41,22 @@
   </repositories>
   <dependencies>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-access</artifactId>
-      <version>1.0.7</version>
-      <optional>true</optional>
+    	<groupId>commons-daemon</groupId>
+    	<artifactId>commons-daemon</artifactId>
+    	<version>1.0.10</version>
+    	<optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.0.7</version>
-      <optional>true</optional>
+    	<groupId>Waarp</groupId>
+    	<artifactId>WaarpR66</artifactId>
+    	<version>2.4.10</version>
     </dependency>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-      <version>1.0.7</version>
+    	<groupId>javasysmon</groupId>
+    	<artifactId>javasysmon</artifactId>
+    	<version>0.3.3</version>
       <optional>true</optional>
     </dependency>
-  	<dependency>
-  		<groupId>Waarp</groupId>
-  		<artifactId>WaarpCommon</artifactId>
-  		<version>1.2.9</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>Waarp</groupId>
-  		<artifactId>WaarpFtp-Core</artifactId>
-  		<version>1.1.5</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>commons-net</groupId>
-  		<artifactId>commons-net</artifactId>
-  		<version>3.1</version>
-  		<classifier>ftp</classifier>
-  	</dependency>
-  	<dependency>
-  		<groupId>Waarp</groupId>
-  		<artifactId>WaarpFtp-Simpleimpl</artifactId>
-  		<version>1.1.5</version>
-  		<scope>test</scope>
-  	</dependency>
-  	<dependency>
-      <groupId>it.sauronsoftware</groupId>
-      <artifactId>ftp4j</artifactId>
-      <version>1.7.2</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/ftp4j-1.7.2.jar</systemPath>
-    </dependency>
-  	<dependency>
-  		<groupId>Waarp</groupId>
-  		<artifactId>WaarpGatewayKernel</artifactId>
-  		<version>1.0.1</version>
-  	</dependency>
   </dependencies>
   <properties>
   	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -114,11 +80,11 @@
                 <mkdir dir="${project.build.directory}"/>
                 <mkdir dir="${project.build.directory}/classes"/>
                 <echo message="${project.version}" file="${project.build.directory}/version.txt" />
-                <echo message="// DO NOT MODIFY - WILL BE OVERWRITTEN DURING THE BUILD PROCESS${line.separator}package org.waarp.ftp.client;${line.separator}/** Provides the version information of Waarp OpenR66. */${line.separator}public final class Version {${line.separator} /** The version identifier. */${line.separator} public static final String ID = &quot;${project.version}&quot;;${line.separator} /** Prints out the version identifier to stdout. */${line.separator} public static void main(String[] args) { System.out.println(ID); }${line.separator} private Version() { super(); }${line.separator}}${line.separator}" file="${basedir}/src/main/java/org/waarp/ftp/client/Version.java" />
+                <echo message="// DO NOT MODIFY - WILL BE OVERWRITTEN DURING THE BUILD PROCESS${line.separator}package org.waarp.openr66.proxy.utils;${line.separator}/** Provides the version information of Waarp OpenR66. */${line.separator}public final class Version {${line.separator} /** The version identifier. */${line.separator} public static final String ID = &quot;${project.version}&quot;;${line.separator} /** Prints out the version identifier to stdout. */${line.separator} public static void main(String[] args) { System.out.println(ID); }${line.separator} private Version() { super(); }${line.separator}}${line.separator}" file="${basedir}/src/main/java/org/waarp/openr66/proxy/utils/Version.java" />
                 <echo message="${project.artifactId}" />
                 <taskdef resource="net/sf/antcontrib/antlib.xml" />
                 <if>
-                <equals arg1="${project.artifactId}" arg2="WaarpFtpClient"/>
+                <equals arg1="${project.artifactId}" arg2="WaarpProxyR66"/>
                 <then>
                 	<mkdir dir="${project.build.directory}/site"/>
                 </then>
@@ -218,7 +184,7 @@
 	            -link http://java.sun.com/javase/6/docs/api/
 	            -link http://static.netty.io/3.5/api/
 
-				-group "Waarp FTP Client for R66 package" "org.waarp.ftp.client*"
+				-group "Waarp R66 Proxy package" "org.waarp.openr66.proxy*"
 
 	            -sourceclasspath ${basedir}/target/classes
 	          </additionalparam>
