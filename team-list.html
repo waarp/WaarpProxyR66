@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title></title>
+    <title>Team list</title>
     <style type="text/css" media="all">
       @import url("./css/maven-base.css");
       @import url("./css/maven-theme.css");
@@ -45,8 +45,8 @@
                                 <h5>Waarp Proxy R66</h5>
                   <ul>
                   <li class="none">
-            <strong>Overview of Proxy R66</strong>
-          </li>
+                          <a href="index.html" title="Overview of Proxy R66">Overview of Proxy R66</a>
+            </li>
           </ul>
                        <h5>Project Documentation</h5>
                   <ul>
@@ -54,8 +54,8 @@
                           <a href="project-info.html" title="Project Information">Project Information</a>
                     <ul>
                       <li class="none">
-            <strong>About</strong>
-          </li>
+                          <a href="index.html" title="About">About</a>
+            </li>
                       <li class="none">
                           <a href="dependencies.html" title="Dependencies">Dependencies</a>
             </li>
@@ -66,8 +66,8 @@
                           <a href="license.html" title="Project License">Project License</a>
             </li>
                       <li class="none">
-                          <a href="team-list.html" title="Project Team">Project Team</a>
-            </li>
+            <strong>Project Team</strong>
+          </li>
                       <li class="none">
                           <a href="source-repository.html" title="Source Repository">Source Repository</a>
             </li>
@@ -89,7 +89,22 @@
     </div>
     <div id="bodyColumn">
       <div id="contentBox">
-        <div class="section"><h2>Waarp Proxy R66<a name="Waarp_Proxy_R66"></a></h2><p>The Waarp Proxy R66 project is a proposal of a file transfer monitor proxy for real production environment. </p></div><div class="section"><h2>Dependency<a name="Dependency"></a></h2><p>It is based mainly on the NETTY framework (NIO great framework support at <a class="externalLink" href="http://netty.io">http://netty.io</a> and is tend to be really efficient, both in term of memory, threads and network bandwidth.</p></div><div class="section"><h2>Specificities<a name="Specificities"></a></h2><p>Bandwidth limitation can be configured both in store and retrieve, per session (although only one value is set by default, but it can be changed dynamically if needed) or globally to the server and of course with no limitation at all if wanted. Limitation should be enough to change the bandwidth behavior for instance depending on the time in the day, so as to allow to limit bandwidth usage when users are at work and in contrary to allow more speed when only batchs are running.</p><p>The specificity of this project is you can adapt this software to your particular needs by changing the pre or post action (even error actions) on transfers (not only transfer).</p><img src="images/waarp.jpg" alt="Waarp Main Project Logo" /><p>See global Waarp project at <a class="externalLink" href="http://waarp.github.com/Waarp/">http://waarp.github.com/Waarp/</a> and particular OpenR66 project at <a class="externalLink" href="http://github.com/WaarpR66/">http://github.com/WaarpR66/</a></p></div>
+        <div class="section"><h2>The Team<a name="The_Team"></a></h2><a name="The_Team"></a><p>A successful project requires many people to play many roles. Some members write code or documentation, while others are valuable as testers, submitting patches and suggestions.</p><p>The team is comprised of Members and Contributors. Members have direct access to the source of a project and actively evolve the code-base. Contributors improve the project through submission of patches and suggestions to the Members. The number of Contributors to the project is unbounded. Get involved today. All contributions to the project are greatly appreciated.</p><div class="section"><h3>Members<a name="Members"></a></h3><a name="Members"></a><p>The following is a list of developers with commit privileges that have directly contributed to the project in one way or another.</p><table border="0" class="bodyTable"><tr class="a"><th>Id</th><th>Name</th><th>Email</th><th>URL</th><th>Roles</th></tr><tr class="b"><td><a name="openlsd"></a>openlsd</td><td>Frederic Bregier</td><td>waarp1 at free.fr</td><td>-</td><td>Project Manager, Architect</td></tr><tr class="a"><td><a name="fredbregier"></a>fredbregier</td><td>Frederic Bregier</td><td>waarp1 at free.fr</td><td><a class="externalLink" href="http://frederic.bregier.free.fr">http://frederic.bregier.free.fr</a></td><td>Developer</td></tr><tr class="b"><td><a name="fredericBregier"></a>fredericBregier</td><td>Frederic Bregier</td><td>waarp1 at free.fr</td><td><a class="externalLink" href="https://github.com/fredericBregier">https://github.com/fredericBregier</a></td><td>Developer</td></tr><tr class="a"><td><a name="waarp"></a>waarp</td><td>Frederic Bregier</td><td>waarp1 at free.fr</td><td><a class="externalLink" href="https://github.com/waarp">https://github.com/waarp</a></td><td>Central role</td></tr></table></div><div class="section"><h3>Contributors<a name="Contributors"></a></h3><a name="Contributors"></a><p>There are no contributors listed for this project. Please check back again later.</p><script type="text/javascript">
+function offsetDate(id, offset) {
+    var now = new Date();
+    var nowTime = now.getTime();
+    var localOffset = now.getTimezoneOffset();
+    var developerTime = nowTime + ( offset * 60 * 60 * 1000 )+ ( localOffset * 60 * 1000 );
+    var developerDate = new Date(developerTime);
+
+    document.getElementById(id).innerHTML = developerDate;
+}
+
+function init(){
+}
+
+window.onLoad = init();
+</script></div></div>
       </div>
     </div>
     <div class="clear">

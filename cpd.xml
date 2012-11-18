@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pmd-cpd>
+<duplication lines="14" tokens="169">
+<file line="215" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
+<file line="303" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
+<codefragment>
+<![CDATA[
+			String system = REQUEST.System.readFileUnique(this);
+			StringBuilder builder = new StringBuilder(system);
+			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
+					Long.toString(Configuration.configuration.serverChannelWriteLimit));
+			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),
+					Long.toString(Configuration.configuration.serverChannelReadLimit));
+			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYCOMMDXXX.toString(),
+					Long.toString(Configuration.configuration.delayCommander));
+			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYRETRYXXX.toString(),
+					Long.toString(Configuration.configuration.delayRetry));
+			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),
+					Long.toString(Configuration.configuration.serverGlobalWriteLimit));
+			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
+					Long.toString(Configuration.configuration.serverGlobalReadLimit));
+]]>
+</codefragment>
+</duplication>
+</pmd-cpd>
