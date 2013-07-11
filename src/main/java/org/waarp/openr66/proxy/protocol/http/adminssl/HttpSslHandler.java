@@ -404,7 +404,7 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 			if (!getMenu) {
 				logger.debug("Name=" + name + " vs "
 						+ name.equals(Configuration.configuration.ADMINNAME) +
-						" Passwd=" + password + " vs " + Arrays.equals(password.getBytes(),
+						" Passwd vs " + Arrays.equals(password.getBytes(),
 								Configuration.configuration.getSERVERADMINKEY()));
 				if (name.equals(Configuration.configuration.ADMINNAME) &&
 						Arrays.equals(password.getBytes(),
