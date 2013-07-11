@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pmd version="4.3" timestamp="2012-11-17T23:11:00.146">
+<pmd version="4.3" timestamp="2013-07-11T20:17:57.344">
 <file name="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\R66Proxy.java">
 <violation beginline="32" endline="79" begincolumn="23" endcolumn="1" rule="UseSingleton" ruleset="Design Rules" package="org.waarp.openr66.proxy" class="R66Proxy" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#UseSingleton" priority="3">
 All methods are static.  Consider using Singleton instead.  Alternatively, you could add a private constructor or make the class abstract to silence this warning.
@@ -14,31 +14,31 @@ Avoid empty catch blocks
 </violation>
 </file>
 <file name="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\configuration\FileBasedConfiguration.java">
-<violation beginline="61" endline="1090" begincolumn="37" endcolumn="1" rule="UseSingleton" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#UseSingleton" priority="3">
+<violation beginline="61" endline="1088" begincolumn="37" endcolumn="1" rule="UseSingleton" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#UseSingleton" priority="3">
 All methods are static.  Consider using Singleton instead.  Alternatively, you could add a private constructor or make the class abstract to silence this warning.
 </violation>
-<violation beginline="446" endline="453" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadIdentity" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="446" endline="451" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadIdentity" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="455" endline="462" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadIdentity" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="453" endline="460" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadIdentity" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="480" endline="485" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadServerParam" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="478" endline="483" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadServerParam" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="487" endline="490" begincolumn="25" endcolumn="25" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadServerParam" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+<violation beginline="485" endline="488" begincolumn="25" endcolumn="25" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadServerParam" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
 These nested if statements could be combined
 </violation>
-<violation beginline="497" endline="502" begincolumn="25" endcolumn="25" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadServerParam" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="495" endline="500" begincolumn="25" endcolumn="25" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadServerParam" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="728" endline="729" begincolumn="35" endcolumn="33" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadLimit" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
+<violation beginline="726" endline="727" begincolumn="35" endcolumn="33" rule="EmptyCatchBlock" ruleset="Basic Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadLimit" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyCatchBlock" priority="3">
 Avoid empty catch blocks
 </violation>
-<violation beginline="912" endline="956" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadNetworkServer" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="910" endline="954" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="loadNetworkServer" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="1075" endline="1078" begincolumn="25" endcolumn="25" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="setConfigurationProxyFromXml" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+<violation beginline="1073" endline="1076" begincolumn="25" endcolumn="25" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.configuration" class="FileBasedConfiguration" method="setConfigurationProxyFromXml" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
 These nested if statements could be combined
 </violation>
 </file>
