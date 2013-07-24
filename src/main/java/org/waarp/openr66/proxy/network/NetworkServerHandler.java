@@ -190,7 +190,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 			KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
 			NetworkPacket response =
 					new NetworkPacket(ChannelUtils.NOCHANNEL,
-							ChannelUtils.NOCHANNEL, keepAlivePacket);
+							ChannelUtils.NOCHANNEL, keepAlivePacket, null);
 			logger.info("Write KAlive");
 			Channels.write(e.getChannel(), response);
 		}
@@ -229,7 +229,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 					keepAlivePacket.validate();
 					NetworkPacket response =
 							new NetworkPacket(ChannelUtils.NOCHANNEL,
-									ChannelUtils.NOCHANNEL, keepAlivePacket);
+									ChannelUtils.NOCHANNEL, keepAlivePacket, null);
 					logger.info("Answer KAlive");
 					Channels.write(e.getChannel(), response);
 				} else {
@@ -303,7 +303,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 			AbstractLocalPacket error) {
 		NetworkPacket networkPacket = null;
 		try {
-			networkPacket = new NetworkPacket(localId, remoteId, error);
+			networkPacket = new NetworkPacket(localId, remoteId, error, null);
 		} catch (OpenR66ProtocolPacketException e) {
 		}
 		try {
