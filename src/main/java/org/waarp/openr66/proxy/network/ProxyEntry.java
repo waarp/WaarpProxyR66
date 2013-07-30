@@ -104,7 +104,7 @@ public class ProxyEntry {
 	}
 
 	public String toString() {
-		return localSocketAddress.toString() + ":" + localIsSsl + " "
+		return "from: "+localSocketAddress.toString() + ":" + localIsSsl + " to: "
 				+ remoteSocketAddress.toString() + ":" + remoteIsSsl;
 	}
 }

@@ -181,7 +181,7 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 
 	private String getTrimValue(String varname) {
 		String value = params.get(varname).get(0).trim();
-		if (value.length() == 0) {
+		if (value.isEmpty()) {
 			value = null;
 		}
 		return value;
@@ -375,7 +375,7 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 					values = params.get("name");
 					if (values != null) {
 						name = values.get(0);
-						if (name == null || name.length() == 0) {
+						if (name == null || name.isEmpty()) {
 							getMenu = true;
 						}
 					}
@@ -387,7 +387,7 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 					values = params.get("passwd");
 					if (values != null) {
 						password = values.get(0);
-						if (password == null || password.length() == 0) {
+						if (password == null || password.isEmpty()) {
 							getMenu = true;
 						} else {
 							getMenu = false;
