@@ -542,7 +542,7 @@
 <a class="jxr_linenumber" name="532" href="#532">532</a> 			<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="533" href="#533">533</a> 		}
 <a class="jxr_linenumber" name="534" href="#534">534</a> 		String path = value.getString();
-<a class="jxr_linenumber" name="535" href="#535">535</a> 		<strong class="jxr_keyword">if</strong> (path == <strong class="jxr_keyword">null</strong> || path.length() == 0) {
+<a class="jxr_linenumber" name="535" href="#535">535</a> 		<strong class="jxr_keyword">if</strong> (path == <strong class="jxr_keyword">null</strong> || path.isEmpty()) {
 <a class="jxr_linenumber" name="536" href="#536">536</a> 			logger.error(<span class="jxr_string">"Unable to set correct Http Admin Base in Config file"</span>);
 <a class="jxr_linenumber" name="537" href="#537">537</a> 			<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="538" href="#538">538</a> 		}
@@ -564,7 +564,7 @@
 <a class="jxr_linenumber" name="554" href="#554">554</a> 		value = hashConfig.get(XML_PATH_ADMIN_KEYPATH);
 <a class="jxr_linenumber" name="555" href="#555">555</a> 		<strong class="jxr_keyword">if</strong> (value != <strong class="jxr_keyword">null</strong> &amp;&amp; (!value.isEmpty())) {
 <a class="jxr_linenumber" name="556" href="#556">556</a> 			String keypath = value.getString();
-<a class="jxr_linenumber" name="557" href="#557">557</a> 			<strong class="jxr_keyword">if</strong> ((keypath == <strong class="jxr_keyword">null</strong>) || (keypath.length() == 0)) {
+<a class="jxr_linenumber" name="557" href="#557">557</a> 			<strong class="jxr_keyword">if</strong> ((keypath == <strong class="jxr_keyword">null</strong>) || (keypath.isEmpty())) {
 <a class="jxr_linenumber" name="558" href="#558">558</a> 				logger.error(<span class="jxr_string">"Bad Key Path"</span>);
 <a class="jxr_linenumber" name="559" href="#559">559</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="560" href="#560">560</a> 			}
@@ -574,7 +574,7 @@
 <a class="jxr_linenumber" name="564" href="#564">564</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="565" href="#565">565</a> 			}
 <a class="jxr_linenumber" name="566" href="#566">566</a> 			String keystorepass = value.getString();
-<a class="jxr_linenumber" name="567" href="#567">567</a> 			<strong class="jxr_keyword">if</strong> ((keystorepass == <strong class="jxr_keyword">null</strong>) || (keystorepass.length() == 0)) {
+<a class="jxr_linenumber" name="567" href="#567">567</a> 			<strong class="jxr_keyword">if</strong> ((keystorepass == <strong class="jxr_keyword">null</strong>) || (keystorepass.isEmpty())) {
 <a class="jxr_linenumber" name="568" href="#568">568</a> 				logger.error(<span class="jxr_string">"Bad KeyStore Passwd"</span>);
 <a class="jxr_linenumber" name="569" href="#569">569</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="570" href="#570">570</a> 			}
@@ -584,7 +584,7 @@
 <a class="jxr_linenumber" name="574" href="#574">574</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="575" href="#575">575</a> 			}
 <a class="jxr_linenumber" name="576" href="#576">576</a> 			String keypass = value.getString();
-<a class="jxr_linenumber" name="577" href="#577">577</a> 			<strong class="jxr_keyword">if</strong> ((keypass == <strong class="jxr_keyword">null</strong>) || (keypass.length() == 0)) {
+<a class="jxr_linenumber" name="577" href="#577">577</a> 			<strong class="jxr_keyword">if</strong> ((keypass == <strong class="jxr_keyword">null</strong>) || (keypass.isEmpty())) {
 <a class="jxr_linenumber" name="578" href="#578">578</a> 				logger.error(<span class="jxr_string">"Bad Key Passwd"</span>);
 <a class="jxr_linenumber" name="579" href="#579">579</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="580" href="#580">580</a> 			}
@@ -827,7 +827,7 @@
 <a class="jxr_linenumber" name="817" href="#817">817</a> 			}
 <a class="jxr_linenumber" name="818" href="#818">818</a> 		} <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="819" href="#819">819</a> 			String keypath = value.getString();
-<a class="jxr_linenumber" name="820" href="#820">820</a> 			<strong class="jxr_keyword">if</strong> ((keypath == <strong class="jxr_keyword">null</strong>) || (keypath.length() == 0)) {
+<a class="jxr_linenumber" name="820" href="#820">820</a> 			<strong class="jxr_keyword">if</strong> ((keypath == <strong class="jxr_keyword">null</strong>) || (keypath.isEmpty())) {
 <a class="jxr_linenumber" name="821" href="#821">821</a> 				logger.error(<span class="jxr_string">"Bad Key Path"</span>);
 <a class="jxr_linenumber" name="822" href="#822">822</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="823" href="#823">823</a> 			}
@@ -837,7 +837,7 @@
 <a class="jxr_linenumber" name="827" href="#827">827</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="828" href="#828">828</a> 			}
 <a class="jxr_linenumber" name="829" href="#829">829</a> 			String keystorepass = value.getString();
-<a class="jxr_linenumber" name="830" href="#830">830</a> 			<strong class="jxr_keyword">if</strong> ((keystorepass == <strong class="jxr_keyword">null</strong>) || (keystorepass.length() == 0)) {
+<a class="jxr_linenumber" name="830" href="#830">830</a> 			<strong class="jxr_keyword">if</strong> ((keystorepass == <strong class="jxr_keyword">null</strong>) || (keystorepass.isEmpty())) {
 <a class="jxr_linenumber" name="831" href="#831">831</a> 				logger.error(<span class="jxr_string">"Bad KeyStore Passwd"</span>);
 <a class="jxr_linenumber" name="832" href="#832">832</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="833" href="#833">833</a> 			}
@@ -847,7 +847,7 @@
 <a class="jxr_linenumber" name="837" href="#837">837</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="838" href="#838">838</a> 			}
 <a class="jxr_linenumber" name="839" href="#839">839</a> 			String keypass = value.getString();
-<a class="jxr_linenumber" name="840" href="#840">840</a> 			<strong class="jxr_keyword">if</strong> ((keypass == <strong class="jxr_keyword">null</strong>) || (keypass.length() == 0)) {
+<a class="jxr_linenumber" name="840" href="#840">840</a> 			<strong class="jxr_keyword">if</strong> ((keypass == <strong class="jxr_keyword">null</strong>) || (keypass.isEmpty())) {
 <a class="jxr_linenumber" name="841" href="#841">841</a> 				logger.error(<span class="jxr_string">"Bad Key Passwd"</span>);
 <a class="jxr_linenumber" name="842" href="#842">842</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="843" href="#843">843</a> 			}
@@ -868,7 +868,7 @@
 <a class="jxr_linenumber" name="858" href="#858">858</a> 			NetworkSslServerPipelineFactory.WaarpSecureKeyStore.initEmptyTrustStore();
 <a class="jxr_linenumber" name="859" href="#859">859</a> 		} <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="860" href="#860">860</a> 			String keypath = value.getString();
-<a class="jxr_linenumber" name="861" href="#861">861</a> 			<strong class="jxr_keyword">if</strong> ((keypath == <strong class="jxr_keyword">null</strong>) || (keypath.length() == 0)) {
+<a class="jxr_linenumber" name="861" href="#861">861</a> 			<strong class="jxr_keyword">if</strong> ((keypath == <strong class="jxr_keyword">null</strong>) || (keypath.isEmpty())) {
 <a class="jxr_linenumber" name="862" href="#862">862</a> 				logger.error(<span class="jxr_string">"Bad TRUST Key Path"</span>);
 <a class="jxr_linenumber" name="863" href="#863">863</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="864" href="#864">864</a> 			}
@@ -878,7 +878,7 @@
 <a class="jxr_linenumber" name="868" href="#868">868</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="869" href="#869">869</a> 			}
 <a class="jxr_linenumber" name="870" href="#870">870</a> 			String keystorepass = value.getString();
-<a class="jxr_linenumber" name="871" href="#871">871</a> 			<strong class="jxr_keyword">if</strong> ((keystorepass == <strong class="jxr_keyword">null</strong>) || (keystorepass.length() == 0)) {
+<a class="jxr_linenumber" name="871" href="#871">871</a> 			<strong class="jxr_keyword">if</strong> ((keystorepass == <strong class="jxr_keyword">null</strong>) || (keystorepass.isEmpty())) {
 <a class="jxr_linenumber" name="872" href="#872">872</a> 				logger.error(<span class="jxr_string">"Bad TRUST KeyStore Passwd"</span>);
 <a class="jxr_linenumber" name="873" href="#873">873</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="874" href="#874">874</a> 			}
@@ -1024,7 +1024,7 @@
 <a class="jxr_linenumber" name="1014" href="#1014">1014</a> 		}
 <a class="jxr_linenumber" name="1015" href="#1015">1015</a> 
 <a class="jxr_linenumber" name="1016" href="#1016">1016</a> 		String path = value.getString();
-<a class="jxr_linenumber" name="1017" href="#1017">1017</a> 		<strong class="jxr_keyword">if</strong> (path == <strong class="jxr_keyword">null</strong> || path.length() == 0) {
+<a class="jxr_linenumber" name="1017" href="#1017">1017</a> 		<strong class="jxr_keyword">if</strong> (path == <strong class="jxr_keyword">null</strong> || path.isEmpty()) {
 <a class="jxr_linenumber" name="1018" href="#1018">1018</a> 			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> OpenR66ProtocolSystemException(
 <a class="jxr_linenumber" name="1019" href="#1019">1019</a> 					<span class="jxr_string">"Unable to find a correct Path in Config file: "</span> + fromXML);
 <a class="jxr_linenumber" name="1020" href="#1020">1020</a> 		}

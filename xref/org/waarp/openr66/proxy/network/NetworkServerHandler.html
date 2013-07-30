@@ -165,7 +165,7 @@
 <a class="jxr_linenumber" name="155" href="#155">155</a> 				<strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="156" href="#156">156</a> 			}
 <a class="jxr_linenumber" name="157" href="#157">157</a> 			<strong class="jxr_keyword">this</strong>.proxyChannel = <strong class="jxr_keyword">this</strong>.bridge.getProxified().networkChannel;
-<a class="jxr_linenumber" name="158" href="#158">158</a> 			logger.info(<span class="jxr_string">"Connected: "</span> + isServer + <span class="jxr_string">" "</span>
+<a class="jxr_linenumber" name="158" href="#158">158</a> 			logger.warn(<span class="jxr_string">"Connected: "</span> + isServer + <span class="jxr_string">" "</span>
 <a class="jxr_linenumber" name="159" href="#159">159</a> 					+ (bridge != <strong class="jxr_keyword">null</strong> ? bridge.getProxyEntry().toString()
 <a class="jxr_linenumber" name="160" href="#160">160</a> 							+ <span class="jxr_string">" proxyChannelId: "</span> + <strong class="jxr_keyword">this</strong>.proxyChannel.getId() : <span class="jxr_string">"nobridge"</span>));
 <a class="jxr_linenumber" name="161" href="#161">161</a> 		} <strong class="jxr_keyword">else</strong> {
@@ -200,7 +200,7 @@
 <a class="jxr_linenumber" name="190" href="#190">190</a> 			KeepAlivePacket keepAlivePacket = <strong class="jxr_keyword">new</strong> KeepAlivePacket();
 <a class="jxr_linenumber" name="191" href="#191">191</a> 			NetworkPacket response =
 <a class="jxr_linenumber" name="192" href="#192">192</a> 					<strong class="jxr_keyword">new</strong> NetworkPacket(ChannelUtils.NOCHANNEL,
-<a class="jxr_linenumber" name="193" href="#193">193</a> 							ChannelUtils.NOCHANNEL, keepAlivePacket);
+<a class="jxr_linenumber" name="193" href="#193">193</a> 							ChannelUtils.NOCHANNEL, keepAlivePacket, <strong class="jxr_keyword">null</strong>);
 <a class="jxr_linenumber" name="194" href="#194">194</a> 			logger.info(<span class="jxr_string">"Write KAlive"</span>);
 <a class="jxr_linenumber" name="195" href="#195">195</a> 			Channels.write(e.getChannel(), response);
 <a class="jxr_linenumber" name="196" href="#196">196</a> 		}
@@ -239,7 +239,7 @@
 <a class="jxr_linenumber" name="229" href="#229">229</a> 					keepAlivePacket.validate();
 <a class="jxr_linenumber" name="230" href="#230">230</a> 					NetworkPacket response =
 <a class="jxr_linenumber" name="231" href="#231">231</a> 							<strong class="jxr_keyword">new</strong> NetworkPacket(ChannelUtils.NOCHANNEL,
-<a class="jxr_linenumber" name="232" href="#232">232</a> 									ChannelUtils.NOCHANNEL, keepAlivePacket);
+<a class="jxr_linenumber" name="232" href="#232">232</a> 									ChannelUtils.NOCHANNEL, keepAlivePacket, <strong class="jxr_keyword">null</strong>);
 <a class="jxr_linenumber" name="233" href="#233">233</a> 					logger.info(<span class="jxr_string">"Answer KAlive"</span>);
 <a class="jxr_linenumber" name="234" href="#234">234</a> 					Channels.write(e.getChannel(), response);
 <a class="jxr_linenumber" name="235" href="#235">235</a> 				} <strong class="jxr_keyword">else</strong> {
@@ -313,7 +313,7 @@
 <a class="jxr_linenumber" name="303" href="#303">303</a> 			AbstractLocalPacket error) {
 <a class="jxr_linenumber" name="304" href="#304">304</a> 		NetworkPacket networkPacket = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="305" href="#305">305</a> 		<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="306" href="#306">306</a> 			networkPacket = <strong class="jxr_keyword">new</strong> NetworkPacket(localId, remoteId, error);
+<a class="jxr_linenumber" name="306" href="#306">306</a> 			networkPacket = <strong class="jxr_keyword">new</strong> NetworkPacket(localId, remoteId, error, <strong class="jxr_keyword">null</strong>);
 <a class="jxr_linenumber" name="307" href="#307">307</a> 		} <strong class="jxr_keyword">catch</strong> (OpenR66ProtocolPacketException e) {
 <a class="jxr_linenumber" name="308" href="#308">308</a> 		}
 <a class="jxr_linenumber" name="309" href="#309">309</a> 		<strong class="jxr_keyword">try</strong> {

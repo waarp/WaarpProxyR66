@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pmd version="4.3" timestamp="2013-07-11T20:17:57.344">
+<pmd version="4.3" timestamp="2013-07-30T21:20:56.187">
 <file name="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\R66Proxy.java">
 <violation beginline="32" endline="79" begincolumn="23" endcolumn="1" rule="UseSingleton" ruleset="Design Rules" package="org.waarp.openr66.proxy" class="R66Proxy" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#UseSingleton" priority="3">
 All methods are static.  Consider using Singleton instead.  Alternatively, you could add a private constructor or make the class abstract to silence this warning.
