@@ -532,7 +532,7 @@ public class FileBasedConfiguration {
 			return false;
 		}
 		String path = value.getString();
-		if (path == null || path.length() == 0) {
+		if (path == null || path.isEmpty()) {
 			logger.error("Unable to set correct Http Admin Base in Config file");
 			return false;
 		}
@@ -554,7 +554,7 @@ public class FileBasedConfiguration {
 		value = hashConfig.get(XML_PATH_ADMIN_KEYPATH);
 		if (value != null && (!value.isEmpty())) {
 			String keypath = value.getString();
-			if ((keypath == null) || (keypath.length() == 0)) {
+			if ((keypath == null) || (keypath.isEmpty())) {
 				logger.error("Bad Key Path");
 				return false;
 			}
@@ -564,7 +564,7 @@ public class FileBasedConfiguration {
 				return false;
 			}
 			String keystorepass = value.getString();
-			if ((keystorepass == null) || (keystorepass.length() == 0)) {
+			if ((keystorepass == null) || (keystorepass.isEmpty())) {
 				logger.error("Bad KeyStore Passwd");
 				return false;
 			}
@@ -574,7 +574,7 @@ public class FileBasedConfiguration {
 				return false;
 			}
 			String keypass = value.getString();
-			if ((keypass == null) || (keypass.length() == 0)) {
+			if ((keypass == null) || (keypass.isEmpty())) {
 				logger.error("Bad Key Passwd");
 				return false;
 			}
@@ -817,7 +817,7 @@ public class FileBasedConfiguration {
 			}
 		} else {
 			String keypath = value.getString();
-			if ((keypath == null) || (keypath.length() == 0)) {
+			if ((keypath == null) || (keypath.isEmpty())) {
 				logger.error("Bad Key Path");
 				return false;
 			}
@@ -827,7 +827,7 @@ public class FileBasedConfiguration {
 				return false;
 			}
 			String keystorepass = value.getString();
-			if ((keystorepass == null) || (keystorepass.length() == 0)) {
+			if ((keystorepass == null) || (keystorepass.isEmpty())) {
 				logger.error("Bad KeyStore Passwd");
 				return false;
 			}
@@ -837,7 +837,7 @@ public class FileBasedConfiguration {
 				return false;
 			}
 			String keypass = value.getString();
-			if ((keypass == null) || (keypass.length() == 0)) {
+			if ((keypass == null) || (keypass.isEmpty())) {
 				logger.error("Bad Key Passwd");
 				return false;
 			}
@@ -858,7 +858,7 @@ public class FileBasedConfiguration {
 			NetworkSslServerPipelineFactory.WaarpSecureKeyStore.initEmptyTrustStore();
 		} else {
 			String keypath = value.getString();
-			if ((keypath == null) || (keypath.length() == 0)) {
+			if ((keypath == null) || (keypath.isEmpty())) {
 				logger.error("Bad TRUST Key Path");
 				return false;
 			}
@@ -868,7 +868,7 @@ public class FileBasedConfiguration {
 				return false;
 			}
 			String keystorepass = value.getString();
-			if ((keystorepass == null) || (keystorepass.length() == 0)) {
+			if ((keystorepass == null) || (keystorepass.isEmpty())) {
 				logger.error("Bad TRUST KeyStore Passwd");
 				return false;
 			}
@@ -1014,7 +1014,7 @@ public class FileBasedConfiguration {
 		}
 
 		String path = value.getString();
-		if (path == null || path.length() == 0) {
+		if (path == null || path.isEmpty()) {
 			throw new OpenR66ProtocolSystemException(
 					"Unable to find a correct Path in Config file: " + fromXML);
 		}

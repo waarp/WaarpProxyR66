@@ -155,7 +155,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 				return;
 			}
 			this.proxyChannel = this.bridge.getProxified().networkChannel;
-			logger.info("Connected: " + isServer + " "
+			logger.warn("Connected: " + isServer + " "
 					+ (bridge != null ? bridge.getProxyEntry().toString()
 							+ " proxyChannelId: " + this.proxyChannel.getId() : "nobridge"));
 		} else {
