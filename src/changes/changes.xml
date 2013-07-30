@@ -5,7 +5,10 @@
 		<author email="waarp1 at free.fr">Frederic Bregier</author>
 	</properties>
 	<body>
-		<release version="1.0.2" date="2013-07-11" description="Fix release">
+		<release version="1.0.3" date="2013-07-28" description="Fix release">
+			<action dev="Frederic Bregier" type="fix">Fix R66 update</action>
+		</release>
+	    <release version="1.0.2" date="2013-07-11" description="Fix release">
 			<action dev="Frederic Bregier" type="fix">Fix R66 Proxy issue</action>
 		</release>
 	    <release version="1.0.1" date="2013-06-27" description="Fix release">
