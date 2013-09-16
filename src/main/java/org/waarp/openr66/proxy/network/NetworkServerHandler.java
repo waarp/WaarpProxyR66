@@ -108,7 +108,9 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 
 	public void setBridge(ProxyBridge bridge) {
 		this.bridge = bridge;
-		this.proxyChannel = bridge.getSource().getNetworkChannel();
+		if (this.bridge != null) {
+			this.proxyChannel = bridge.getSource().getNetworkChannel();
+		}
 		this.clientFuture.setSuccess();
 		logger.debug("setBridge: " + isServer + " "
 				+ (bridge != null ? bridge.getProxyEntry().toString()
