@@ -242,7 +242,9 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 			return;
 		}
 		// forward message
-		Channels.write(proxyChannel, packet);
+		if (proxyChannel != null) {
+			Channels.write(proxyChannel, packet);
+		}
 	}
 
 	@Override
@@ -283,8 +285,10 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 					exception.getMessage(), null);
 			writeError(e.getChannel(), ChannelUtils.NOCHANNEL,
 					ChannelUtils.NOCHANNEL, errorPacket);
-			writeError(proxyChannel, ChannelUtils.NOCHANNEL,
-					ChannelUtils.NOCHANNEL, errorPacket);
+			if (proxyChannel != null) {
+				writeError(proxyChannel, ChannelUtils.NOCHANNEL,
+						ChannelUtils.NOCHANNEL, errorPacket);
+			}
 			logger.debug("Will close NETWORK channel: {}", exception.getMessage());
 			ChannelCloseTimer.closeFutureChannel(e.getChannel());
 		} else {
