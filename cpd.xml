@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pmd-cpd>
 <duplication lines="14" tokens="169">
-<file line="215" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
-<file line="303" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
+<file line="218" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
+<file line="321" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
 <codefragment>
 <![CDATA[
 			String system = REQUEST.System.readFileUnique(this);
