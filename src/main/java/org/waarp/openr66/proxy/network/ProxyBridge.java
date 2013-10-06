@@ -51,6 +51,11 @@ public class ProxyBridge {
 	public void initializeProxy() {
 		Channel proxy = transaction.createConnectionWithRetry(proxyEntry.getRemoteSocketAddress(),
 				proxyEntry.isRemoteSsl());
+		if (proxy == null) {
+			// Can't connect ?
+			this.futureRemoteConnected.cancel();
+			return;
+		}
 		this.proxified =
 				(NetworkServerHandler) proxy.getPipeline()
 						.get(NetworkServerPipelineFactory.HANDLER);

@@ -59,6 +59,7 @@ import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
+import org.waarp.openr66.protocol.utils.R66ShutdownHook;
 import org.waarp.openr66.protocol.utils.Version;
 import org.waarp.openr66.proxy.configuration.Configuration;
 import org.waarp.openr66.proxy.protocol.http.HttpWriteCacheEnable;
@@ -78,6 +79,8 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 	 */
 	private static final ConcurrentHashMap<String, R66Session> sessions = new ConcurrentHashMap<String, R66Session>();
 	private static final ConcurrentHashMap<String, DbSession> dbSessions = new ConcurrentHashMap<String, DbSession>();
+	private static final Random random = new Random();
+	
 	private volatile R66Session authentHttp = new R66Session();
 
 	private volatile HttpRequest request;
@@ -243,8 +246,23 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 					if (Configuration.configuration.shutdownConfiguration.serviceFuture != null) {
 						error = error("Shutdown in progress but WARNING: R66 started as a service might not be correctly shown as stopped under Windows Services");
 					} else {
-						error = error("Shutdown in progress");
+						error = error("Shutdown in progress...");
 					}
+					R66ShutdownHook.setRestart(false);
+					newSession = true;
+					clearSession();
+					forceClose = true;
+					shutdown = true;
+					return error;
+				} else if (act.equalsIgnoreCase("Restart")) {
+					String error;
+					if (Configuration.configuration.shutdownConfiguration.serviceFuture != null) {
+						error = error("Shutdown in progress but WARNING: R66 started as a service might not be correctly shown as stopped under Windows Services");
+					} else {
+						error = error("Shutdown in progress... Waiting "+(Configuration.configuration.TIMEOUTCON*2/1000)+"s before trying to reconnect");
+					}
+					error = error.replace("XXXRELOADHTTPXXX", "HTTP-EQUIV=\"refresh\" CONTENT=\""+(Configuration.configuration.TIMEOUTCON*2/1000)+"\"");
+					R66ShutdownHook.setRestart(true);
 					newSession = true;
 					clearSession();
 					forceClose = true;
@@ -434,7 +452,7 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 			responseContent.append(index);
 			clearSession();
 			admin = new DefaultCookie(R66SESSION, Configuration.configuration.HOST_ID +
-					Long.toHexString(new Random().nextLong()));
+					Long.toHexString(random.nextLong()));
 			sessions.put(admin.getValue(), this.authentHttp);
 			authentHttp.setStatus(72);
 			if (this.isPrivateDbSession) {
