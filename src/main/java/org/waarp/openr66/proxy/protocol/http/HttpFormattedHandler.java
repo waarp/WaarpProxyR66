@@ -19,6 +19,8 @@ package org.waarp.openr66.proxy.protocol.http;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,15 +37,16 @@ import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.handler.codec.http.Cookie;
 import org.jboss.netty.handler.codec.http.CookieDecoder;
 import org.jboss.netty.handler.codec.http.CookieEncoder;
+import org.jboss.netty.handler.codec.http.DefaultCookie;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
+import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.jboss.netty.handler.traffic.TrafficCounter;
-import org.waarp.common.database.DbSession;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpInternalLogger;
@@ -51,6 +54,7 @@ import org.waarp.common.logging.WaarpInternalLoggerFactory;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.openr66.context.R66Session;
 import org.waarp.openr66.context.filesystem.R66Dir;
+import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
@@ -119,7 +123,7 @@ public class HttpFormattedHandler extends SimpleChannelUpstreamHandler {
 	}
 
 	private static enum REPLACEMENT {
-		XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX;
+		XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX, XXXLANGXXX;
 	}
 
 	public static final int LIMITROW = 60; // better
@@ -130,6 +134,7 @@ public class HttpFormattedHandler extends SimpleChannelUpstreamHandler {
 											// divided
 											// by
 											// 4
+	private static final String I18NEXT = "i18next";
 
 	public final R66Session authentHttp = new R66Session();
 
@@ -143,16 +148,8 @@ public class HttpFormattedHandler extends SimpleChannelUpstreamHandler {
 
 	private volatile String uriRequest;
 
-	/**
-	 * The Database connection attached to this NetworkChannel shared among all associated
-	 * LocalChannels
-	 */
-	private DbSession dbSession;
+	private volatile String lang = Messages.slocale;
 
-	/**
-	 * Does this dbSession is private and so should be closed
-	 */
-	private boolean isPrivateDbSession = false;
 	private boolean isCurrentRequestXml = false;
 
 	private String readFileHeader(String filename) {
@@ -186,6 +183,7 @@ public class HttpFormattedHandler extends SimpleChannelUpstreamHandler {
 				"IN:" + (trafficCounter.getLastReadThroughput() / 131072) +
 						"Mbits&nbsp;&nbsp;OUT:" +
 						(trafficCounter.getLastWriteThroughput() / 131072) + "Mbits");
+		WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
 		return builder.toString();
 	}
 
@@ -200,7 +198,7 @@ public class HttpFormattedHandler extends SimpleChannelUpstreamHandler {
 		uriRequest = queryStringDecoder.getPath();
 		logger.debug("Msg: " + uriRequest);
 		if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
-				uriRequest.contains("res/")) {
+				uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
 			HttpWriteCacheEnable.writeFile(request,
 					e.getChannel(), Configuration.configuration.httpBasePath + uriRequest,
 					"XYZR66NOSESSION");
@@ -213,6 +211,18 @@ public class HttpFormattedHandler extends SimpleChannelUpstreamHandler {
 			cval = '5';
 			nb = 0; // since it could be the default or setup by request
 			isCurrentRequestXml = true;
+		}
+		if (request.getMethod() == HttpMethod.GET) {
+			Map<String, List<String>> params = queryStringDecoder.getParameters();
+			String value = null;
+			try {
+				value = params.get("setLng").get(0).trim();
+			} catch (NullPointerException e1) {
+				value = null;
+			}
+			if (value != null && ! value.isEmpty()) {
+				lang = value;
+			}
 		}
 		boolean getMenu = (cval == 'z');
 		boolean extraBoolean = false;
@@ -282,14 +292,34 @@ public class HttpFormattedHandler extends SimpleChannelUpstreamHandler {
 		if (cookieString != null) {
 			CookieDecoder cookieDecoder = new CookieDecoder();
 			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+			boolean i18nextFound = false;
 			if (!cookies.isEmpty()) {
 				// Reset the cookies if necessary.
 				CookieEncoder cookieEncoder = new CookieEncoder(true);
 				for (Cookie cookie : cookies) {
+					if (cookie.getName().equalsIgnoreCase(I18NEXT)) {
+						i18nextFound = true;
+						cookie.setValue(lang);
+						cookieEncoder.addCookie(cookie);
+						response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+						cookieEncoder = new CookieEncoder(true);
+					} else {
+						cookieEncoder.addCookie(cookie);
+						response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+						cookieEncoder = new CookieEncoder(true);
+					}
+				}
+				if (! i18nextFound) {
+					Cookie cookie = new DefaultCookie(I18NEXT, lang);
 					cookieEncoder.addCookie(cookie);
 					response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-					cookieEncoder = new CookieEncoder(true);
 				}
+			}
+			if (! i18nextFound) {
+				Cookie cookie = new DefaultCookie(I18NEXT, lang);
+				CookieEncoder cookieEncoder = new CookieEncoder(true);
+				cookieEncoder.addCookie(cookie);
+				response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
 			}
 		}
 
@@ -341,10 +371,6 @@ public class HttpFormattedHandler extends SimpleChannelUpstreamHandler {
 				sendError(ctx, HttpResponseStatus.BAD_REQUEST);
 			}
 		} else {
-			if (this.isPrivateDbSession && dbSession != null) {
-				dbSession.disconnect();
-				dbSession = null;
-			}
 			// Nothing to do
 			return;
 		}
