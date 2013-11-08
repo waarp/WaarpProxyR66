@@ -49,7 +49,6 @@ import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
 import org.jboss.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.database.DbSession;
 import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpInternalLogger;
@@ -60,11 +59,11 @@ import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
+import org.waarp.openr66.protocol.http.HttpWriteCacheEnable;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 import org.waarp.openr66.protocol.utils.R66ShutdownHook;
 import org.waarp.openr66.protocol.utils.Version;
 import org.waarp.openr66.proxy.configuration.Configuration;
-import org.waarp.openr66.proxy.protocol.http.HttpWriteCacheEnable;
 
 /**
  * @author Frederic Bregier
@@ -80,7 +79,6 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 	 * Session Management
 	 */
 	private static final ConcurrentHashMap<String, R66Session> sessions = new ConcurrentHashMap<String, R66Session>();
-	private static final ConcurrentHashMap<String, DbSession> dbSessions = new ConcurrentHashMap<String, DbSession>();
 	private static final Random random = new Random();
 	
 	private volatile R66Session authentHttp = new R66Session();
@@ -139,16 +137,6 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 	public static final int LIMITROW = 48; // better if it can
 											// be divided by 4
 
-	/**
-	 * The Database connection attached to this NetworkChannel shared among all associated
-	 * LocalChannels in the session
-	 */
-	private volatile DbSession dbSession = null;
-	/**
-	 * Does this dbSession is private and so should be closed
-	 */
-	private volatile boolean isPrivateDbSession = false;
-
 	private String readFileHeader(String filename) {
 		String value;
 		try {
@@ -173,16 +161,16 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 				Configuration.configuration.HOST_ID);
 		if (authentHttp.isAuthenticated()) {
 			WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
-					"Connected");
+					Messages.getString("HttpSslHandler.1")); //$NON-NLS-1$
 		} else {
 			WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
-					"Not authenticated");
+					Messages.getString("HttpSslHandler.0")); //$NON-NLS-1$
 		}
 		TrafficCounter trafficCounter =
 				Configuration.configuration.getGlobalTrafficShapingHandler().getTrafficCounter();
 		WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
-				"IN:" + (trafficCounter.getLastReadThroughput() >> 17) +
-						"Mbits&nbsp;<br>&nbsp;OUT:" +
+				Messages.getString("HttpSslHandler.IN") + (trafficCounter.getLastReadThroughput() >> 17) + //$NON-NLS-1$
+						Messages.getString("HttpSslHandler.OUT") + //$NON-NLS-1$
 						(trafficCounter.getLastWriteThroughput() >> 17) + "Mbits");
 		WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
 		return builder.toString();
@@ -268,9 +256,9 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 				} else if (act.equalsIgnoreCase("Shutdown")) {
 					String error;
 					if (Configuration.configuration.shutdownConfiguration.serviceFuture != null) {
-						error = error("Shutdown in progress but WARNING: R66 started as a service might not be correctly shown as stopped under Windows Services");
+						error = error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
 					} else {
-						error = error("Shutdown in progress...");
+						error = error(Messages.getString("HttpSslHandler.37")); //$NON-NLS-1$
 					}
 					R66ShutdownHook.setRestart(false);
 					newSession = true;
@@ -281,9 +269,9 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 				} else if (act.equalsIgnoreCase("Restart")) {
 					String error;
 					if (Configuration.configuration.shutdownConfiguration.serviceFuture != null) {
-						error = error("Shutdown in progress but WARNING: R66 started as a service might not be correctly shown as stopped under Windows Services");
+						error = error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
 					} else {
-						error = error("Shutdown in progress... Waiting "+(Configuration.configuration.TIMEOUTCON*2/1000)+"s before trying to reconnect");
+						error = error(Messages.getString("HttpSslHandler.39")+(Configuration.configuration.TIMEOUTCON*2/1000)+Messages.getString("HttpSslHandler.40")); //$NON-NLS-1$ //$NON-NLS-2$
 					}
 					error = error.replace("XXXRELOADHTTPXXX", "HTTP-EQUIV=\"refresh\" CONTENT=\""+(Configuration.configuration.TIMEOUTCON*2/1000)+"\"");
 					R66ShutdownHook.setRestart(true);
@@ -335,9 +323,9 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 								Configuration.configuration.delayRetry = 1000;
 							}
 						}
-						extraInformation = "Configuration Saved";
+						extraInformation = Messages.getString("HttpSslHandler.41"); //$NON-NLS-1$
 					} catch (NumberFormatException e) {
-						extraInformation = "Configuration cannot be Saved due to Format error";
+						extraInformation = Messages.getString("HttpSslHandler.42"); //$NON-NLS-1$
 					}
 				}
 			}
@@ -381,7 +369,6 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 	private void clearSession() {
 		if (admin != null) {
 			R66Session lsession = sessions.remove(admin.getValue());
-			dbSessions.remove(admin.getValue());
 			admin = null;
 			if (lsession != null) {
 				lsession.setStatus(75);
@@ -480,9 +467,6 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 					Long.toHexString(random.nextLong()));
 			sessions.put(admin.getValue(), this.authentHttp);
 			authentHttp.setStatus(72);
-			if (this.isPrivateDbSession) {
-				dbSessions.put(admin.getValue(), dbSession);
-			}
 			logger.debug("CreateSession: " + uriRequest + ":{}", admin);
 			writeResponse(e.getChannel());
 		}
@@ -550,13 +534,6 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 						if (session != null) {
 							authentHttp = session;
 							authentHttp.setStatus(73);
-						} else {
-							admin = null;
-							continue;
-						}
-						DbSession dbSession = dbSessions.get(admin.getValue());
-						if (dbSession != null) {
-							this.dbSession = dbSession;
 						} else {
 							admin = null;
 							continue;
