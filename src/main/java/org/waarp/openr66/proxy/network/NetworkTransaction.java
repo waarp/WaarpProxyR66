@@ -34,6 +34,7 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.WaarpInternalLogger;
 import org.waarp.common.logging.WaarpInternalLoggerFactory;
+import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
@@ -60,12 +61,12 @@ public class NetworkTransaction {
 	 * ExecutorService Server Boss
 	 */
 	private final ExecutorService execServerBoss = Executors
-			.newCachedThreadPool();
+			.newCachedThreadPool(new WaarpThreadFactory("ServerBossProxy"));
 	/**
 	 * ExecutorService Server Worker
 	 */
 	private final ExecutorService execServerWorker = Executors
-			.newCachedThreadPool();
+			.newCachedThreadPool(new WaarpThreadFactory("ServerWorkerProxy"));
 
 	private final ChannelFactory channelClientFactory = new NioClientSocketChannelFactory(
 			execServerBoss,
