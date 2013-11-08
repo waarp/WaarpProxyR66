@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <pmd-cpd>
-<duplication lines="14" tokens="169">
-<file line="218" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
-<file line="321" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
+<duplication lines="15" tokens="173">
+<file line="224" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
+<file line="333" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
 <codefragment>
 <![CDATA[
 			String system = REQUEST.System.readFileUnique(this);
@@ -19,6 +19,31 @@
 					Long.toString(Configuration.configuration.serverGlobalWriteLimit));
 			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
 					Long.toString(Configuration.configuration.serverGlobalReadLimit));
+			langHandle(builder);
+]]>
+</codefragment>
+</duplication>
+<duplication lines="16" tokens="124">
+<file line="573" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java"/>
+<file line="300" path="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\HttpFormattedHandler.java"/>
+<codefragment>
+<![CDATA[
+					} else if (cookie.getName().equalsIgnoreCase(I18NEXT)) {
+						i18nextFound = true;
+						cookie.setValue(lang);
+						cookieEncoder.addCookie(cookie);
+						response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+						cookieEncoder = new CookieEncoder(true);
+					} else {
+						cookieEncoder.addCookie(cookie);
+						response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+						cookieEncoder = new CookieEncoder(true);
+					}
+				}
+				if (! i18nextFound) {
+					Cookie cookie = new DefaultCookie(I18NEXT, lang);
+					cookieEncoder.addCookie(cookie);
+					response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
 ]]>
 </codefragment>
 </duplication>

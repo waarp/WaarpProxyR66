@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pmd version="4.3" timestamp="2013-10-06T19:48:13.615">
+<pmd version="4.3" timestamp="2013-11-08T23:28:19.395">
 <file name="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\R66Proxy.java">
 <violation beginline="32" endline="79" begincolumn="23" endcolumn="1" rule="UseSingleton" ruleset="Design Rules" package="org.waarp.openr66.proxy" class="R66Proxy" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#UseSingleton" priority="3">
 All methods are static.  Consider using Singleton instead.  Alternatively, you could add a private constructor or make the class abstract to silence this warning.
@@ -91,19 +91,19 @@ Avoid empty catch blocks
 </violation>
 </file>
 <file name="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\network\NetworkTransaction.java">
-<violation beginline="81" endline="81" begincolumn="23" endcolumn="80" rule="SingularField" ruleset="Design Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" variable="networkServerPipelineFactory" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#SingularField" priority="3">
+<violation beginline="82" endline="82" begincolumn="23" endcolumn="80" rule="SingularField" ruleset="Design Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" variable="networkServerPipelineFactory" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#SingularField" priority="3">
 Perhaps 'networkServerPipelineFactory' could be replaced by a local variable.
 </violation>
-<violation beginline="185" endline="190" begincolumn="33" endcolumn="33" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" method="createConnection" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+<violation beginline="186" endline="191" begincolumn="33" endcolumn="33" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" method="createConnection" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
 These nested if statements could be combined
 </violation>
-<violation beginline="213" endline="217" begincolumn="41" endcolumn="41" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" method="createNewConnection" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="214" endline="218" begincolumn="41" endcolumn="41" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" method="createNewConnection" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="222" endline="223" begincolumn="33" endcolumn="110" rule="PreserveStackTrace" ruleset="Design Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" method="createNewConnection" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#PreserveStackTrace" priority="3">
+<violation beginline="223" endline="224" begincolumn="33" endcolumn="110" rule="PreserveStackTrace" ruleset="Design Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" method="createNewConnection" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#PreserveStackTrace" priority="3">
 New exception is thrown in catch block, original stack trace may be lost
 </violation>
-<violation beginline="232" endline="237" begincolumn="41" endcolumn="41" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" method="createNewConnection" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+<violation beginline="233" endline="238" begincolumn="41" endcolumn="41" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.network" class="NetworkTransaction" method="createNewConnection" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
 These nested if statements could be combined
 </violation>
 </file>
@@ -147,53 +147,42 @@ Avoid empty catch blocks
 </violation>
 </file>
 <file name="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\HttpFormattedHandler.java">
-<violation beginline="144" endline="144" begincolumn="26" endcolumn="43" rule="SingularField" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpFormattedHandler" variable="uriRequest" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#SingularField" priority="3">
+<violation beginline="149" endline="149" begincolumn="26" endcolumn="43" rule="SingularField" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpFormattedHandler" variable="uriRequest" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#SingularField" priority="3">
 Perhaps 'uriRequest' could be replaced by a local variable.
 </violation>
-<violation beginline="155" endline="155" begincolumn="25" endcolumn="42" rule="ImmutableField" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpFormattedHandler" variable="isPrivateDbSession" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ImmutableField" priority="3">
-Private field 'isPrivateDbSession' could be made final; it is only initialized in the declaration or constructor.
-</violation>
-<violation beginline="223" endline="229" begincolumn="25" endcolumn="25" rule="TooFewBranchesForASwitchStatement" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpFormattedHandler" method="messageReceived" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#TooFewBranchesForASwitchStatement" priority="1">
+<violation beginline="233" endline="239" begincolumn="25" endcolumn="25" rule="TooFewBranchesForASwitchStatement" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpFormattedHandler" method="messageReceived" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#TooFewBranchesForASwitchStatement" priority="1">
 A switch with less than 3 branches is inefficient, use a if statement instead.
 </violation>
-<violation beginline="332" endline="350" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpFormattedHandler" method="exceptionCaught" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="362" endline="376" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpFormattedHandler" method="exceptionCaught" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
-</violation>
-</file>
-<file name="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\HttpWriteCacheEnable.java">
-<violation beginline="44" endline="129" begincolumn="35" endcolumn="1" rule="UseSingleton" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpWriteCacheEnable" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#UseSingleton" priority="3">
-All methods are static.  Consider using Singleton instead.  Alternatively, you could add a private constructor or make the class abstract to silence this warning.
-</violation>
-<violation beginline="118" endline="119" begincolumn="100" endcolumn="41" rule="EmptyIfStmt" ruleset="Basic Rules" package="org.waarp.openr66.proxy.protocol.http" class="HttpWriteCacheEnable" method="handleCookies" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#EmptyIfStmt" priority="3">
-Avoid empty if statements
 </violation>
 </file>
 <file name="J:\Git\github\waarp-digest\WaarpProxyR66\src\main\java\org\waarp\openr66\proxy\protocol\http\adminssl\HttpSslHandler.java">
-<violation beginline="92" endline="92" begincolumn="26" endcolumn="63" rule="SingularField" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" variable="queryStringDecoder" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#SingularField" priority="3">
+<violation beginline="93" endline="93" begincolumn="26" endcolumn="63" rule="SingularField" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" variable="queryStringDecoder" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#SingularField" priority="3">
 Perhaps 'queryStringDecoder' could be replaced by a local variable.
 </violation>
-<violation beginline="246" endline="250" begincolumn="41" endcolumn="41" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="System" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="258" endline="262" begincolumn="41" endcolumn="41" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="System" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="259" endline="263" begincolumn="41" endcolumn="41" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="System" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="271" endline="275" begincolumn="41" endcolumn="41" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="System" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="390" endline="421" begincolumn="25" endcolumn="25" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="checkAuthent" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="402" endline="433" begincolumn="25" endcolumn="25" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="checkAuthent" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="406" endline="415" begincolumn="41" endcolumn="41" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="checkAuthent" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="418" endline="427" begincolumn="41" endcolumn="41" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="checkAuthent" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="528" endline="540" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="checkSession" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="534" endline="540" begincolumn="49" endcolumn="49" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="checkSession" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="545" endline="582" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="handleCookies" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="556" endline="611" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="handleCookies" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
-<violation beginline="570" endline="574" begincolumn="41" endcolumn="41" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="handleCookies" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
+<violation beginline="593" endline="597" begincolumn="41" endcolumn="41" rule="CollapsibleIfStatements" ruleset="Basic Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="handleCookies" externalInfoUrl="http://pmd.sourceforge.net/rules/basic.html#CollapsibleIfStatements" priority="3">
 These nested if statements could be combined
 </violation>
-<violation beginline="654" endline="668" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="exceptionCaught" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
+<violation beginline="683" endline="697" begincolumn="17" endcolumn="17" rule="ConfusingTernary" ruleset="Design Rules" package="org.waarp.openr66.proxy.protocol.http.adminssl" class="HttpSslHandler" method="exceptionCaught" externalInfoUrl="http://pmd.sourceforge.net/rules/design.html#ConfusingTernary" priority="3">
 Avoid if (x != y) ..; else ..;
 </violation>
 </file>
