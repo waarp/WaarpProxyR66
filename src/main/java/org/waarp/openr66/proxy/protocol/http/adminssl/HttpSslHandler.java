@@ -434,10 +434,10 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 			if (!getMenu) {
 				logger.debug("Name=" + name + " vs "
 						+ name.equals(Configuration.configuration.ADMINNAME) +
-						" Passwd vs " + Arrays.equals(password.getBytes(),
+						" Passwd vs " + Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
 								Configuration.configuration.getSERVERADMINKEY()));
 				if (name.equals(Configuration.configuration.ADMINNAME) &&
-						Arrays.equals(password.getBytes(),
+						Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
 								Configuration.configuration.getSERVERADMINKEY())) {
 					authentHttp.getAuth().specialNoSessionAuth(true,
 							Configuration.configuration.HOST_ID);
