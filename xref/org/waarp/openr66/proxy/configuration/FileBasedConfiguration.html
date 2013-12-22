@@ -589,7 +589,7 @@
 <a class="jxr_linenumber" name="579" href="#579">579</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="580" href="#580">580</a> 			}
 <a class="jxr_linenumber" name="581" href="#581">581</a> 			<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="582" href="#582">582</a> 				Configuration.WaarpSecureKeyStore =
+<a class="jxr_linenumber" name="582" href="#582">582</a> 				Configuration.waarpSecureKeyStore =
 <a class="jxr_linenumber" name="583" href="#583">583</a> 						<strong class="jxr_keyword">new</strong> WaarpSecureKeyStore(keypath, keystorepass,
 <a class="jxr_linenumber" name="584" href="#584">584</a> 								keypass);
 <a class="jxr_linenumber" name="585" href="#585">585</a> 			} <strong class="jxr_keyword">catch</strong> (CryptoException e) {
@@ -597,10 +597,10 @@
 <a class="jxr_linenumber" name="587" href="#587">587</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="588" href="#588">588</a> 			}
 <a class="jxr_linenumber" name="589" href="#589">589</a> 			<em class="jxr_comment">// No client authentication</em>
-<a class="jxr_linenumber" name="590" href="#590">590</a> 			Configuration.WaarpSecureKeyStore.initEmptyTrustStore();
+<a class="jxr_linenumber" name="590" href="#590">590</a> 			Configuration.waarpSecureKeyStore.initEmptyTrustStore();
 <a class="jxr_linenumber" name="591" href="#591">591</a> 			Configuration.waarpSslContextFactory =
 <a class="jxr_linenumber" name="592" href="#592">592</a> 					<strong class="jxr_keyword">new</strong> WaarpSslContextFactory(
-<a class="jxr_linenumber" name="593" href="#593">593</a> 							Configuration.WaarpSecureKeyStore, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="593" href="#593">593</a> 							Configuration.waarpSecureKeyStore, <strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="594" href="#594">594</a> 		}
 <a class="jxr_linenumber" name="595" href="#595">595</a> 		value = hashConfig.get(XML_MONITOR_PASTLIMIT);
 <a class="jxr_linenumber" name="596" href="#596">596</a> 		<strong class="jxr_keyword">if</strong> (value != <strong class="jxr_keyword">null</strong> &amp;&amp; (!value.isEmpty())) {
@@ -819,7 +819,7 @@
 <a class="jxr_linenumber" name="809" href="#809">809</a> 		<strong class="jxr_keyword">if</strong> (value == <strong class="jxr_keyword">null</strong> || (value.isEmpty())) {
 <a class="jxr_linenumber" name="810" href="#810">810</a> 			logger.info(<span class="jxr_string">"Unable to find Key Path"</span>);
 <a class="jxr_linenumber" name="811" href="#811">811</a> 			<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="812" href="#812">812</a> 				NetworkSslServerPipelineFactory.WaarpSecureKeyStore =
+<a class="jxr_linenumber" name="812" href="#812">812</a> 				NetworkSslServerPipelineFactory.waarpSecureKeyStore =
 <a class="jxr_linenumber" name="813" href="#813">813</a> 						<strong class="jxr_keyword">new</strong> WaarpSecureKeyStore(<span class="jxr_string">"secret"</span>, <span class="jxr_string">"secret"</span>);
 <a class="jxr_linenumber" name="814" href="#814">814</a> 			} <strong class="jxr_keyword">catch</strong> (CryptoException e) {
 <a class="jxr_linenumber" name="815" href="#815">815</a> 				logger.error(<span class="jxr_string">"Bad SecureKeyStore construction"</span>);
@@ -852,7 +852,7 @@
 <a class="jxr_linenumber" name="842" href="#842">842</a> 				<strong class="jxr_keyword">return</strong> false;
 <a class="jxr_linenumber" name="843" href="#843">843</a> 			}
 <a class="jxr_linenumber" name="844" href="#844">844</a> 			<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="845" href="#845">845</a> 				NetworkSslServerPipelineFactory.WaarpSecureKeyStore =
+<a class="jxr_linenumber" name="845" href="#845">845</a> 				NetworkSslServerPipelineFactory.waarpSecureKeyStore =
 <a class="jxr_linenumber" name="846" href="#846">846</a> 						<strong class="jxr_keyword">new</strong> WaarpSecureKeyStore(keypath, keystorepass,
 <a class="jxr_linenumber" name="847" href="#847">847</a> 								keypass);
 <a class="jxr_linenumber" name="848" href="#848">848</a> 			} <strong class="jxr_keyword">catch</strong> (CryptoException e) {
@@ -865,7 +865,7 @@
 <a class="jxr_linenumber" name="855" href="#855">855</a> 		value = hashConfig.get(XML_PATH_TRUSTKEYPATH);
 <a class="jxr_linenumber" name="856" href="#856">856</a> 		<strong class="jxr_keyword">if</strong> (value == <strong class="jxr_keyword">null</strong> || (value.isEmpty())) {
 <a class="jxr_linenumber" name="857" href="#857">857</a> 			logger.info(<span class="jxr_string">"Unable to find TRUST Key Path"</span>);
-<a class="jxr_linenumber" name="858" href="#858">858</a> 			NetworkSslServerPipelineFactory.WaarpSecureKeyStore.initEmptyTrustStore();
+<a class="jxr_linenumber" name="858" href="#858">858</a> 			NetworkSslServerPipelineFactory.waarpSecureKeyStore.initEmptyTrustStore();
 <a class="jxr_linenumber" name="859" href="#859">859</a> 		} <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="860" href="#860">860</a> 			String keypath = value.getString();
 <a class="jxr_linenumber" name="861" href="#861">861</a> 			<strong class="jxr_keyword">if</strong> ((keypath == <strong class="jxr_keyword">null</strong>) || (keypath.isEmpty())) {
@@ -888,7 +888,7 @@
 <a class="jxr_linenumber" name="878" href="#878">878</a> 				useClientAuthent = value.getBoolean();
 <a class="jxr_linenumber" name="879" href="#879">879</a> 			}
 <a class="jxr_linenumber" name="880" href="#880">880</a> 			<strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="881" href="#881">881</a> 				NetworkSslServerPipelineFactory.WaarpSecureKeyStore.initTrustStore(keypath,
+<a class="jxr_linenumber" name="881" href="#881">881</a> 				NetworkSslServerPipelineFactory.waarpSecureKeyStore.initTrustStore(keypath,
 <a class="jxr_linenumber" name="882" href="#882">882</a> 						keystorepass, useClientAuthent);
 <a class="jxr_linenumber" name="883" href="#883">883</a> 			} <strong class="jxr_keyword">catch</strong> (CryptoException e) {
 <a class="jxr_linenumber" name="884" href="#884">884</a> 				logger.error(<span class="jxr_string">"Bad TrustKeyStore construction"</span>);
@@ -897,7 +897,7 @@
 <a class="jxr_linenumber" name="887" href="#887">887</a> 		}
 <a class="jxr_linenumber" name="888" href="#888">888</a> 		NetworkSslServerPipelineFactory.waarpSslContextFactory =
 <a class="jxr_linenumber" name="889" href="#889">889</a> 				<strong class="jxr_keyword">new</strong> WaarpSslContextFactory(
-<a class="jxr_linenumber" name="890" href="#890">890</a> 						NetworkSslServerPipelineFactory.WaarpSecureKeyStore);
+<a class="jxr_linenumber" name="890" href="#890">890</a> 						NetworkSslServerPipelineFactory.waarpSecureKeyStore);
 <a class="jxr_linenumber" name="891" href="#891">891</a> 		<strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="892" href="#892">892</a> 	}
 <a class="jxr_linenumber" name="893" href="#893">893</a> 

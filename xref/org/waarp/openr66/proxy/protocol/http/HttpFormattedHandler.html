@@ -275,7 +275,7 @@
 <a class="jxr_linenumber" name="265" href="#265">265</a> 		<em class="jxr_comment">// Decide whether to close the connection or not.</em>
 <a class="jxr_linenumber" name="266" href="#266">266</a> 		<strong class="jxr_keyword">boolean</strong> keepAlive = HttpHeaders.isKeepAlive(request);
 <a class="jxr_linenumber" name="267" href="#267">267</a> 		<strong class="jxr_keyword">boolean</strong> close = HttpHeaders.Values.CLOSE.equalsIgnoreCase(request
-<a class="jxr_linenumber" name="268" href="#268">268</a> 				.getHeader(HttpHeaders.Names.CONNECTION)) ||
+<a class="jxr_linenumber" name="268" href="#268">268</a> 				.headers().get(HttpHeaders.Names.CONNECTION)) ||
 <a class="jxr_linenumber" name="269" href="#269">269</a> 				(!keepAlive);
 <a class="jxr_linenumber" name="270" href="#270">270</a> 
 <a class="jxr_linenumber" name="271" href="#271">271</a> 		<em class="jxr_comment">// Build the response object.</em>
@@ -283,22 +283,22 @@
 <a class="jxr_linenumber" name="273" href="#273">273</a> 				status);
 <a class="jxr_linenumber" name="274" href="#274">274</a> 		response.setContent(buf);
 <a class="jxr_linenumber" name="275" href="#275">275</a> 		<strong class="jxr_keyword">if</strong> (isCurrentRequestXml) {
-<a class="jxr_linenumber" name="276" href="#276">276</a> 			response.setHeader(HttpHeaders.Names.CONTENT_TYPE, <span class="jxr_string">"text/xml"</span>);
+<a class="jxr_linenumber" name="276" href="#276">276</a> 			response.headers().set(HttpHeaders.Names.CONTENT_TYPE, <span class="jxr_string">"text/xml"</span>);
 <a class="jxr_linenumber" name="277" href="#277">277</a> 		} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="278" href="#278">278</a> 			response.setHeader(HttpHeaders.Names.CONTENT_TYPE, <span class="jxr_string">"text/html"</span>);
+<a class="jxr_linenumber" name="278" href="#278">278</a> 			response.headers().set(HttpHeaders.Names.CONTENT_TYPE, <span class="jxr_string">"text/html"</span>);
 <a class="jxr_linenumber" name="279" href="#279">279</a> 		}
 <a class="jxr_linenumber" name="280" href="#280">280</a> 		<strong class="jxr_keyword">if</strong> (keepAlive) {
-<a class="jxr_linenumber" name="281" href="#281">281</a> 			response.setHeader(HttpHeaders.Names.CONNECTION,
+<a class="jxr_linenumber" name="281" href="#281">281</a> 			response.headers().set(HttpHeaders.Names.CONNECTION,
 <a class="jxr_linenumber" name="282" href="#282">282</a> 					HttpHeaders.Values.KEEP_ALIVE);
 <a class="jxr_linenumber" name="283" href="#283">283</a> 		}
 <a class="jxr_linenumber" name="284" href="#284">284</a> 		<strong class="jxr_keyword">if</strong> (!close) {
 <a class="jxr_linenumber" name="285" href="#285">285</a> 			<em class="jxr_comment">// There's no need to add 'Content-Length' header</em>
 <a class="jxr_linenumber" name="286" href="#286">286</a> 			<em class="jxr_comment">// if this is the last response.</em>
-<a class="jxr_linenumber" name="287" href="#287">287</a> 			response.setHeader(HttpHeaders.Names.CONTENT_LENGTH, String
+<a class="jxr_linenumber" name="287" href="#287">287</a> 			response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, String
 <a class="jxr_linenumber" name="288" href="#288">288</a> 					.valueOf(buf.readableBytes()));
 <a class="jxr_linenumber" name="289" href="#289">289</a> 		}
 <a class="jxr_linenumber" name="290" href="#290">290</a> 
-<a class="jxr_linenumber" name="291" href="#291">291</a> 		String cookieString = request.getHeader(HttpHeaders.Names.COOKIE);
+<a class="jxr_linenumber" name="291" href="#291">291</a> 		String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
 <a class="jxr_linenumber" name="292" href="#292">292</a> 		<strong class="jxr_keyword">if</strong> (cookieString != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="293" href="#293">293</a> 			CookieDecoder cookieDecoder = <strong class="jxr_keyword">new</strong> CookieDecoder();
 <a class="jxr_linenumber" name="294" href="#294">294</a> 			Set&lt;Cookie&gt; cookies = cookieDecoder.decode(cookieString);
@@ -311,25 +311,25 @@
 <a class="jxr_linenumber" name="301" href="#301">301</a> 						i18nextFound = <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="302" href="#302">302</a> 						cookie.setValue(lang);
 <a class="jxr_linenumber" name="303" href="#303">303</a> 						cookieEncoder.addCookie(cookie);
-<a class="jxr_linenumber" name="304" href="#304">304</a> 						response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+<a class="jxr_linenumber" name="304" href="#304">304</a> 						response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
 <a class="jxr_linenumber" name="305" href="#305">305</a> 						cookieEncoder = <strong class="jxr_keyword">new</strong> CookieEncoder(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="306" href="#306">306</a> 					} <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="307" href="#307">307</a> 						cookieEncoder.addCookie(cookie);
-<a class="jxr_linenumber" name="308" href="#308">308</a> 						response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+<a class="jxr_linenumber" name="308" href="#308">308</a> 						response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
 <a class="jxr_linenumber" name="309" href="#309">309</a> 						cookieEncoder = <strong class="jxr_keyword">new</strong> CookieEncoder(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="310" href="#310">310</a> 					}
 <a class="jxr_linenumber" name="311" href="#311">311</a> 				}
 <a class="jxr_linenumber" name="312" href="#312">312</a> 				<strong class="jxr_keyword">if</strong> (! i18nextFound) {
 <a class="jxr_linenumber" name="313" href="#313">313</a> 					Cookie cookie = <strong class="jxr_keyword">new</strong> DefaultCookie(I18NEXT, lang);
 <a class="jxr_linenumber" name="314" href="#314">314</a> 					cookieEncoder.addCookie(cookie);
-<a class="jxr_linenumber" name="315" href="#315">315</a> 					response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+<a class="jxr_linenumber" name="315" href="#315">315</a> 					response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
 <a class="jxr_linenumber" name="316" href="#316">316</a> 				}
 <a class="jxr_linenumber" name="317" href="#317">317</a> 			}
 <a class="jxr_linenumber" name="318" href="#318">318</a> 			<strong class="jxr_keyword">if</strong> (! i18nextFound) {
 <a class="jxr_linenumber" name="319" href="#319">319</a> 				Cookie cookie = <strong class="jxr_keyword">new</strong> DefaultCookie(I18NEXT, lang);
 <a class="jxr_linenumber" name="320" href="#320">320</a> 				CookieEncoder cookieEncoder = <strong class="jxr_keyword">new</strong> CookieEncoder(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="321" href="#321">321</a> 				cookieEncoder.addCookie(cookie);
-<a class="jxr_linenumber" name="322" href="#322">322</a> 				response.addHeader(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+<a class="jxr_linenumber" name="322" href="#322">322</a> 				response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
 <a class="jxr_linenumber" name="323" href="#323">323</a> 			}
 <a class="jxr_linenumber" name="324" href="#324">324</a> 		}
 <a class="jxr_linenumber" name="325" href="#325">325</a> 
@@ -351,7 +351,7 @@
 <a class="jxr_linenumber" name="341" href="#341">341</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
 <a class="jxr_linenumber" name="342" href="#342">342</a> 		HttpResponse response = <strong class="jxr_keyword">new</strong> DefaultHttpResponse(HttpVersion.HTTP_1_1,
 <a class="jxr_linenumber" name="343" href="#343">343</a> 				status);
-<a class="jxr_linenumber" name="344" href="#344">344</a> 		response.setHeader(HttpHeaders.Names.CONTENT_TYPE, <span class="jxr_string">"text/html"</span>);
+<a class="jxr_linenumber" name="344" href="#344">344</a> 		response.headers().set(HttpHeaders.Names.CONTENT_TYPE, <span class="jxr_string">"text/html"</span>);
 <a class="jxr_linenumber" name="345" href="#345">345</a> 		responseContent.setLength(0);
 <a class="jxr_linenumber" name="346" href="#346">346</a> 		responseContent.append(REQUEST.error.readHeader(<strong class="jxr_keyword">this</strong>));
 <a class="jxr_linenumber" name="347" href="#347">347</a> 		responseContent.append(<span class="jxr_string">"OpenR66 Web Failure: "</span>);
