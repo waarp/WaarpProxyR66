@@ -30,7 +30,6 @@ import org.waarp.openr66.protocol.localhandler.packet.KeepAlivePacket;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketCodec;
 import org.waarp.openr66.protocol.localhandler.packet.LocalPacketFactory;
 import org.waarp.openr66.protocol.localhandler.packet.NoOpPacket;
-import org.waarp.openr66.proxy.network.NetworkServerHandler;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacket;
 import org.waarp.openr66.protocol.utils.ChannelUtils;
 
