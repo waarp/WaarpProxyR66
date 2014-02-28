@@ -81,16 +81,16 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 	private static final ConcurrentHashMap<String, R66Session> sessions = new ConcurrentHashMap<String, R66Session>();
 	private static final Random random = new Random();
 	
-	private volatile R66Session authentHttp = new R66Session();
+	private R66Session authentHttp = new R66Session();
 
-	private volatile HttpRequest request;
+	private HttpRequest request;
 	private volatile boolean newSession = false;
 	private volatile Cookie admin = null;
 	private final StringBuilder responseContent = new StringBuilder();
-	private volatile String uriRequest;
-	private volatile Map<String, List<String>> params;
-	private volatile String lang = Messages.slocale;
-	private volatile QueryStringDecoder queryStringDecoder;
+	private String uriRequest;
+	private Map<String, List<String>> params;
+	private String lang = Messages.slocale;
+	private QueryStringDecoder queryStringDecoder;
 	private volatile boolean forceClose = false;
 	private volatile boolean shutdown = false;
 

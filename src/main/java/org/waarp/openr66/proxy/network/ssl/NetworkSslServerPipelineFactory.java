@@ -17,7 +17,6 @@
  */
 package org.waarp.openr66.proxy.network.ssl;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.netty.channel.ChannelPipeline;
@@ -43,8 +42,8 @@ public class NetworkSslServerPipelineFactory extends
 	 * @param isClient
 	 *            True if this Factory is to be used in Client mode
 	 */
-	public NetworkSslServerPipelineFactory(boolean isClient, ExecutorService executor) {
-		super(isClient, executor);
+	public NetworkSslServerPipelineFactory(boolean isClient) {
+		super(isClient);
 	}
 
 	public ChannelPipeline getPipeline() {
@@ -55,14 +54,14 @@ public class NetworkSslServerPipelineFactory extends
 			// Not server: no clientAuthent, no renegotiation
 			sslHandler =
 					waarpSslContextFactory.initPipelineFactory(false,
-							false, false, executorService);
+							false, false);
 			sslHandler.setIssueHandshake(true);
 		} else {
 			// Server: no renegotiation still, but possible clientAuthent
 			sslHandler =
 					waarpSslContextFactory.initPipelineFactory(true,
 							waarpSslContextFactory.needClientAuthentication(),
-							true, executorService);
+							true);
 		}
 		pipeline.addLast("ssl", sslHandler);
 
