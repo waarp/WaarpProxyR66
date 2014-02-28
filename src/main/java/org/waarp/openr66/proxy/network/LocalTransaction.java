@@ -17,10 +17,11 @@
  */
 package org.waarp.openr66.proxy.network;
 
-import org.jboss.netty.channel.Channel;
 import org.waarp.openr66.database.data.DbTaskRunner;
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolRemoteShutdownException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.localhandler.LocalChannelReference;
+import org.waarp.openr66.protocol.networkhandler.NetworkChannelReference;
 import org.waarp.openr66.protocol.utils.R66Future;
 
 /**
@@ -28,6 +29,17 @@ import org.waarp.openr66.protocol.utils.R66Future;
  * 
  */
 public class LocalTransaction extends org.waarp.openr66.protocol.localhandler.LocalTransaction {
+
+	@Override
+	public LocalChannelReference createNewClient(NetworkChannelReference networkChannelReference,
+			Integer remoteId, R66Future futureRequest) throws OpenR66ProtocolSystemException,
+			OpenR66ProtocolRemoteShutdownException {
+		return null;
+	}
+
+	@Override
+	protected void remove(LocalChannelReference localChannelReference) {
+	}
 
 	/**
 	 * 
@@ -42,18 +54,8 @@ public class LocalTransaction extends org.waarp.openr66.protocol.localhandler.Lo
 	}
 
 	@Override
-	public LocalChannelReference createNewClient(Channel networkChannel, Integer remoteId,
-			R66Future futureRequest) throws OpenR66ProtocolSystemException {
-		return null;
-	}
-
-	@Override
 	public LocalChannelReference getFromId(Integer id) {
 		return null;
-	}
-
-	@Override
-	public void remove(Channel channel) {
 	}
 
 	@Override
@@ -68,10 +70,6 @@ public class LocalTransaction extends org.waarp.openr66.protocol.localhandler.Lo
 	@Override
 	public int getNumberLocalChannel() {
 		return ProxyBridge.transaction.getNumberClients();
-	}
-
-	@Override
-	public void closeLocalChannelsFromNetworkChannel(Channel networkChannel) {
 	}
 
 	@Override
