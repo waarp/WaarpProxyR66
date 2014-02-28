@@ -147,89 +147,88 @@
 <a class="jxr_linenumber" name="137" href="#137">137</a> 
 <a class="jxr_linenumber" name="138" href="#138">138</a> 		<strong class="jxr_keyword">if</strong> (useSSL &amp;&amp; HOST_SSLID != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="139" href="#139">139</a> 			serverSslBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap(serverChannelFactory);
-<a class="jxr_linenumber" name="140" href="#140">140</a> 			networkSslServerPipelineFactory = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerPipelineFactory.html">NetworkSslServerPipelineFactory</a>(false,
-<a class="jxr_linenumber" name="141" href="#141">141</a> 					execServerWorker);
-<a class="jxr_linenumber" name="142" href="#142">142</a> 			serverSslBootstrap.setPipelineFactory(networkSslServerPipelineFactory);
-<a class="jxr_linenumber" name="143" href="#143">143</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"child.tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="144" href="#144">144</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"child.keepAlive"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="145" href="#145">145</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"child.reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="146" href="#146">146</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"child.connectTimeoutMillis"</span>, TIMEOUTCON);
-<a class="jxr_linenumber" name="147" href="#147">147</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="148" href="#148">148</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="149" href="#149">149</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"connectTimeoutMillis"</span>, TIMEOUTCON);
-<a class="jxr_linenumber" name="150" href="#150">150</a> 			<em class="jxr_comment">// FIXME take into account multiple address</em>
-<a class="jxr_linenumber" name="151" href="#151">151</a> 			<strong class="jxr_keyword">for</strong> (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
-<a class="jxr_linenumber" name="152" href="#152">152</a> 				<strong class="jxr_keyword">if</strong> (entry.isLocalSsl()) {
-<a class="jxr_linenumber" name="153" href="#153">153</a> 					serverChannelGroup.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));
-<a class="jxr_linenumber" name="154" href="#154">154</a> 				}
-<a class="jxr_linenumber" name="155" href="#155">155</a> 			}
-<a class="jxr_linenumber" name="156" href="#156">156</a> 		} <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="157" href="#157">157</a> 			networkSslServerPipelineFactory = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="158" href="#158">158</a> 			logger.warn(<span class="jxr_string">"SSL mode is desactivated"</span>);
-<a class="jxr_linenumber" name="159" href="#159">159</a> 		}
-<a class="jxr_linenumber" name="160" href="#160">160</a> 
-<a class="jxr_linenumber" name="161" href="#161">161</a> 		<em class="jxr_comment">// Factory for TrafficShapingHandler</em>
-<a class="jxr_linenumber" name="162" href="#162">162</a> 		globalTrafficShapingHandler = <strong class="jxr_keyword">new</strong> GlobalTrafficHandler(
-<a class="jxr_linenumber" name="163" href="#163">163</a> 				objectSizeEstimator, timerTrafficCounter,
-<a class="jxr_linenumber" name="164" href="#164">164</a> 				serverGlobalWriteLimit, serverGlobalReadLimit, delayLimit);
-<a class="jxr_linenumber" name="165" href="#165">165</a> 		<strong class="jxr_keyword">this</strong>.constraintLimitHandler.setHandler(globalTrafficShapingHandler);
-<a class="jxr_linenumber" name="166" href="#166">166</a> 		ProxyBridge.initialize();
-<a class="jxr_linenumber" name="167" href="#167">167</a> 		localTransaction = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/LocalTransaction.html">LocalTransaction</a>();
-<a class="jxr_linenumber" name="168" href="#168">168</a> 		thriftService = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="169" href="#169">169</a> 	}
-<a class="jxr_linenumber" name="170" href="#170">170</a> 
-<a class="jxr_linenumber" name="171" href="#171">171</a> 	@Override
-<a class="jxr_linenumber" name="172" href="#172">172</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> startHttpSupport() {
-<a class="jxr_linenumber" name="173" href="#173">173</a> 		<em class="jxr_comment">// Now start the HTTP support</em>
-<a class="jxr_linenumber" name="174" href="#174">174</a> 		httpChannelGroup = <strong class="jxr_keyword">new</strong> DefaultChannelGroup(<span class="jxr_string">"HttpOpenR66"</span>);
-<a class="jxr_linenumber" name="175" href="#175">175</a> 		<em class="jxr_comment">// Configure the server.</em>
-<a class="jxr_linenumber" name="176" href="#176">176</a> 		httpChannelFactory = <strong class="jxr_keyword">new</strong> NioServerSocketChannelFactory(
-<a class="jxr_linenumber" name="177" href="#177">177</a> 				execServerBoss,
-<a class="jxr_linenumber" name="178" href="#178">178</a> 				execServerWorker,
-<a class="jxr_linenumber" name="179" href="#179">179</a> 				SERVER_THREAD);
-<a class="jxr_linenumber" name="180" href="#180">180</a> 		httpBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap(
-<a class="jxr_linenumber" name="181" href="#181">181</a> 				httpChannelFactory);
-<a class="jxr_linenumber" name="182" href="#182">182</a> 		<em class="jxr_comment">// Set up the event pipeline factory.</em>
-<a class="jxr_linenumber" name="183" href="#183">183</a> 		httpBootstrap.setPipelineFactory(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/protocol/http/HttpPipelineFactory.html">HttpPipelineFactory</a>(useHttpCompression));
-<a class="jxr_linenumber" name="184" href="#184">184</a> 		httpBootstrap.setOption(<span class="jxr_string">"child.tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="185" href="#185">185</a> 		httpBootstrap.setOption(<span class="jxr_string">"child.keepAlive"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="186" href="#186">186</a> 		httpBootstrap.setOption(<span class="jxr_string">"child.reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="187" href="#187">187</a> 		httpBootstrap.setOption(<span class="jxr_string">"child.connectTimeoutMillis"</span>, TIMEOUTCON);
-<a class="jxr_linenumber" name="188" href="#188">188</a> 		httpBootstrap.setOption(<span class="jxr_string">"tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="189" href="#189">189</a> 		httpBootstrap.setOption(<span class="jxr_string">"reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="190" href="#190">190</a> 		httpBootstrap.setOption(<span class="jxr_string">"connectTimeoutMillis"</span>, TIMEOUTCON);
-<a class="jxr_linenumber" name="191" href="#191">191</a> 		<em class="jxr_comment">// Bind and start to accept incoming connections.</em>
-<a class="jxr_linenumber" name="192" href="#192">192</a> 		httpChannelGroup.add(httpBootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(SERVER_HTTPPORT)));
-<a class="jxr_linenumber" name="193" href="#193">193</a> 
-<a class="jxr_linenumber" name="194" href="#194">194</a> 		<em class="jxr_comment">// Now start the HTTPS support</em>
-<a class="jxr_linenumber" name="195" href="#195">195</a> 		<em class="jxr_comment">// Configure the server.</em>
-<a class="jxr_linenumber" name="196" href="#196">196</a> 		httpsChannelFactory = <strong class="jxr_keyword">new</strong> NioServerSocketChannelFactory(
-<a class="jxr_linenumber" name="197" href="#197">197</a> 				execServerBoss,
-<a class="jxr_linenumber" name="198" href="#198">198</a> 				execServerWorker,
-<a class="jxr_linenumber" name="199" href="#199">199</a> 				SERVER_THREAD);
-<a class="jxr_linenumber" name="200" href="#200">200</a> 		httpsBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap(
-<a class="jxr_linenumber" name="201" href="#201">201</a> 				httpsChannelFactory);
-<a class="jxr_linenumber" name="202" href="#202">202</a> 		<em class="jxr_comment">// Set up the event pipeline factory.</em>
-<a class="jxr_linenumber" name="203" href="#203">203</a> 		httpsBootstrap.setPipelineFactory(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/protocol/http/adminssl/HttpSslPipelineFactory.html">HttpSslPipelineFactory</a>(useHttpCompression,
-<a class="jxr_linenumber" name="204" href="#204">204</a> 				false, execServerWorker));
-<a class="jxr_linenumber" name="205" href="#205">205</a> 		httpsBootstrap.setOption(<span class="jxr_string">"child.tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="206" href="#206">206</a> 		httpsBootstrap.setOption(<span class="jxr_string">"child.keepAlive"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="207" href="#207">207</a> 		httpsBootstrap.setOption(<span class="jxr_string">"child.reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="208" href="#208">208</a> 		httpsBootstrap.setOption(<span class="jxr_string">"child.connectTimeoutMillis"</span>, TIMEOUTCON);
-<a class="jxr_linenumber" name="209" href="#209">209</a> 		httpsBootstrap.setOption(<span class="jxr_string">"tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="210" href="#210">210</a> 		httpsBootstrap.setOption(<span class="jxr_string">"reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="211" href="#211">211</a> 		httpsBootstrap.setOption(<span class="jxr_string">"connectTimeoutMillis"</span>, TIMEOUTCON);
-<a class="jxr_linenumber" name="212" href="#212">212</a> 		<em class="jxr_comment">// Bind and start to accept incoming connections.</em>
-<a class="jxr_linenumber" name="213" href="#213">213</a> 		httpChannelGroup.add(httpsBootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(SERVER_HTTPSPORT)));
-<a class="jxr_linenumber" name="214" href="#214">214</a> 	}
-<a class="jxr_linenumber" name="215" href="#215">215</a> 
-<a class="jxr_linenumber" name="216" href="#216">216</a> 	@Override
-<a class="jxr_linenumber" name="217" href="#217">217</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> serverStop() {
-<a class="jxr_linenumber" name="218" href="#218">218</a> 		<strong class="jxr_keyword">super</strong>.serverStop();
-<a class="jxr_linenumber" name="219" href="#219">219</a> 		ProxyBridge.transaction.closeAll();
-<a class="jxr_linenumber" name="220" href="#220">220</a> 	}
-<a class="jxr_linenumber" name="221" href="#221">221</a> 
-<a class="jxr_linenumber" name="222" href="#222">222</a> }
+<a class="jxr_linenumber" name="140" href="#140">140</a> 			networkSslServerPipelineFactory = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerPipelineFactory.html">NetworkSslServerPipelineFactory</a>(false);
+<a class="jxr_linenumber" name="141" href="#141">141</a> 			serverSslBootstrap.setPipelineFactory(networkSslServerPipelineFactory);
+<a class="jxr_linenumber" name="142" href="#142">142</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"child.tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="143" href="#143">143</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"child.keepAlive"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="144" href="#144">144</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"child.reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="145" href="#145">145</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"child.connectTimeoutMillis"</span>, TIMEOUTCON);
+<a class="jxr_linenumber" name="146" href="#146">146</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="147" href="#147">147</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="148" href="#148">148</a> 			serverSslBootstrap.setOption(<span class="jxr_string">"connectTimeoutMillis"</span>, TIMEOUTCON);
+<a class="jxr_linenumber" name="149" href="#149">149</a> 			<em class="jxr_comment">// FIXME take into account multiple address</em>
+<a class="jxr_linenumber" name="150" href="#150">150</a> 			<strong class="jxr_keyword">for</strong> (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
+<a class="jxr_linenumber" name="151" href="#151">151</a> 				<strong class="jxr_keyword">if</strong> (entry.isLocalSsl()) {
+<a class="jxr_linenumber" name="152" href="#152">152</a> 					serverChannelGroup.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));
+<a class="jxr_linenumber" name="153" href="#153">153</a> 				}
+<a class="jxr_linenumber" name="154" href="#154">154</a> 			}
+<a class="jxr_linenumber" name="155" href="#155">155</a> 		} <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="156" href="#156">156</a> 			networkSslServerPipelineFactory = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="157" href="#157">157</a> 			logger.warn(<span class="jxr_string">"SSL mode is desactivated"</span>);
+<a class="jxr_linenumber" name="158" href="#158">158</a> 		}
+<a class="jxr_linenumber" name="159" href="#159">159</a> 
+<a class="jxr_linenumber" name="160" href="#160">160</a> 		<em class="jxr_comment">// Factory for TrafficShapingHandler</em>
+<a class="jxr_linenumber" name="161" href="#161">161</a> 		globalTrafficShapingHandler = <strong class="jxr_keyword">new</strong> GlobalTrafficHandler(
+<a class="jxr_linenumber" name="162" href="#162">162</a> 				objectSizeEstimator, timerTrafficCounter,
+<a class="jxr_linenumber" name="163" href="#163">163</a> 				serverGlobalWriteLimit, serverGlobalReadLimit, delayLimit);
+<a class="jxr_linenumber" name="164" href="#164">164</a> 		<strong class="jxr_keyword">this</strong>.constraintLimitHandler.setHandler(globalTrafficShapingHandler);
+<a class="jxr_linenumber" name="165" href="#165">165</a> 		ProxyBridge.initialize();
+<a class="jxr_linenumber" name="166" href="#166">166</a> 		localTransaction = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/LocalTransaction.html">LocalTransaction</a>();
+<a class="jxr_linenumber" name="167" href="#167">167</a> 		thriftService = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="168" href="#168">168</a> 	}
+<a class="jxr_linenumber" name="169" href="#169">169</a> 
+<a class="jxr_linenumber" name="170" href="#170">170</a> 	@Override
+<a class="jxr_linenumber" name="171" href="#171">171</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> startHttpSupport() {
+<a class="jxr_linenumber" name="172" href="#172">172</a> 		<em class="jxr_comment">// Now start the HTTP support</em>
+<a class="jxr_linenumber" name="173" href="#173">173</a> 		httpChannelGroup = <strong class="jxr_keyword">new</strong> DefaultChannelGroup(<span class="jxr_string">"HttpOpenR66"</span>);
+<a class="jxr_linenumber" name="174" href="#174">174</a> 		<em class="jxr_comment">// Configure the server.</em>
+<a class="jxr_linenumber" name="175" href="#175">175</a> 		httpChannelFactory = <strong class="jxr_keyword">new</strong> NioServerSocketChannelFactory(
+<a class="jxr_linenumber" name="176" href="#176">176</a> 				execServerBoss,
+<a class="jxr_linenumber" name="177" href="#177">177</a> 				execServerWorker,
+<a class="jxr_linenumber" name="178" href="#178">178</a> 				SERVER_THREAD);
+<a class="jxr_linenumber" name="179" href="#179">179</a> 		httpBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap(
+<a class="jxr_linenumber" name="180" href="#180">180</a> 				httpChannelFactory);
+<a class="jxr_linenumber" name="181" href="#181">181</a> 		<em class="jxr_comment">// Set up the event pipeline factory.</em>
+<a class="jxr_linenumber" name="182" href="#182">182</a> 		httpBootstrap.setPipelineFactory(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/protocol/http/HttpPipelineFactory.html">HttpPipelineFactory</a>(useHttpCompression));
+<a class="jxr_linenumber" name="183" href="#183">183</a> 		httpBootstrap.setOption(<span class="jxr_string">"child.tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="184" href="#184">184</a> 		httpBootstrap.setOption(<span class="jxr_string">"child.keepAlive"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="185" href="#185">185</a> 		httpBootstrap.setOption(<span class="jxr_string">"child.reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="186" href="#186">186</a> 		httpBootstrap.setOption(<span class="jxr_string">"child.connectTimeoutMillis"</span>, TIMEOUTCON);
+<a class="jxr_linenumber" name="187" href="#187">187</a> 		httpBootstrap.setOption(<span class="jxr_string">"tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="188" href="#188">188</a> 		httpBootstrap.setOption(<span class="jxr_string">"reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="189" href="#189">189</a> 		httpBootstrap.setOption(<span class="jxr_string">"connectTimeoutMillis"</span>, TIMEOUTCON);
+<a class="jxr_linenumber" name="190" href="#190">190</a> 		<em class="jxr_comment">// Bind and start to accept incoming connections.</em>
+<a class="jxr_linenumber" name="191" href="#191">191</a> 		httpChannelGroup.add(httpBootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(SERVER_HTTPPORT)));
+<a class="jxr_linenumber" name="192" href="#192">192</a> 
+<a class="jxr_linenumber" name="193" href="#193">193</a> 		<em class="jxr_comment">// Now start the HTTPS support</em>
+<a class="jxr_linenumber" name="194" href="#194">194</a> 		<em class="jxr_comment">// Configure the server.</em>
+<a class="jxr_linenumber" name="195" href="#195">195</a> 		httpsChannelFactory = <strong class="jxr_keyword">new</strong> NioServerSocketChannelFactory(
+<a class="jxr_linenumber" name="196" href="#196">196</a> 				execServerBoss,
+<a class="jxr_linenumber" name="197" href="#197">197</a> 				execServerWorker,
+<a class="jxr_linenumber" name="198" href="#198">198</a> 				SERVER_THREAD);
+<a class="jxr_linenumber" name="199" href="#199">199</a> 		httpsBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap(
+<a class="jxr_linenumber" name="200" href="#200">200</a> 				httpsChannelFactory);
+<a class="jxr_linenumber" name="201" href="#201">201</a> 		<em class="jxr_comment">// Set up the event pipeline factory.</em>
+<a class="jxr_linenumber" name="202" href="#202">202</a> 		httpsBootstrap.setPipelineFactory(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/protocol/http/adminssl/HttpSslPipelineFactory.html">HttpSslPipelineFactory</a>(useHttpCompression,
+<a class="jxr_linenumber" name="203" href="#203">203</a> 				false));
+<a class="jxr_linenumber" name="204" href="#204">204</a> 		httpsBootstrap.setOption(<span class="jxr_string">"child.tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="205" href="#205">205</a> 		httpsBootstrap.setOption(<span class="jxr_string">"child.keepAlive"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="206" href="#206">206</a> 		httpsBootstrap.setOption(<span class="jxr_string">"child.reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="207" href="#207">207</a> 		httpsBootstrap.setOption(<span class="jxr_string">"child.connectTimeoutMillis"</span>, TIMEOUTCON);
+<a class="jxr_linenumber" name="208" href="#208">208</a> 		httpsBootstrap.setOption(<span class="jxr_string">"tcpNoDelay"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="209" href="#209">209</a> 		httpsBootstrap.setOption(<span class="jxr_string">"reuseAddress"</span>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="210" href="#210">210</a> 		httpsBootstrap.setOption(<span class="jxr_string">"connectTimeoutMillis"</span>, TIMEOUTCON);
+<a class="jxr_linenumber" name="211" href="#211">211</a> 		<em class="jxr_comment">// Bind and start to accept incoming connections.</em>
+<a class="jxr_linenumber" name="212" href="#212">212</a> 		httpChannelGroup.add(httpsBootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(SERVER_HTTPSPORT)));
+<a class="jxr_linenumber" name="213" href="#213">213</a> 	}
+<a class="jxr_linenumber" name="214" href="#214">214</a> 
+<a class="jxr_linenumber" name="215" href="#215">215</a> 	@Override
+<a class="jxr_linenumber" name="216" href="#216">216</a> 	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> serverStop() {
+<a class="jxr_linenumber" name="217" href="#217">217</a> 		<strong class="jxr_keyword">super</strong>.serverStop();
+<a class="jxr_linenumber" name="218" href="#218">218</a> 		ProxyBridge.transaction.closeAll();
+<a class="jxr_linenumber" name="219" href="#219">219</a> 	}
+<a class="jxr_linenumber" name="220" href="#220">220</a> 
+<a class="jxr_linenumber" name="221" href="#221">221</a> }
 </pre>
 <hr/><div id="footer">This page was automatically generated by <a href="http://maven.apache.org/">Maven</a></div></body>
 </html>
