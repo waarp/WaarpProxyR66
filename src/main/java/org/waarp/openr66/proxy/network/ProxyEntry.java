@@ -20,6 +20,8 @@ package org.waarp.openr66.proxy.network;
 import java.net.SocketAddress;
 import java.util.HashMap;
 
+import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
+
 /**
  * @author "Frederic Bregier"
  * 
@@ -34,9 +36,13 @@ public class ProxyEntry {
 	private boolean remoteIsSsl;
 
 	public static void add(SocketAddress localAddress, boolean localIsSsl,
-			SocketAddress remoteAddress, boolean remoteIsSsl) {
-		proxyEntries.put(localAddress.toString(),
-				new ProxyEntry(localAddress.toString(), localAddress, localIsSsl, remoteAddress,
+			SocketAddress remoteAddress, boolean remoteIsSsl) throws OpenR66ProtocolSystemException {
+		String sla = localAddress.toString();
+		if (proxyEntries.containsKey(sla)) {
+			throw new OpenR66ProtocolSystemException("Error in the configuration: Two entries with the same localAdress");
+		}
+		proxyEntries.put(sla,
+				new ProxyEntry(sla, localAddress, localIsSsl, remoteAddress,
 						remoteIsSsl));
 	}
 

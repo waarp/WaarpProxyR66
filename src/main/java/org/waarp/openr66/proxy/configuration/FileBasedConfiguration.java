@@ -942,7 +942,12 @@ public class FileBasedConfiguration {
 				boolean remotessl = value.getBoolean();
 				InetSocketAddress local = new InetSocketAddress(listenaddr, listenport);
 				InetSocketAddress remote = new InetSocketAddress(remoteaddr, remoteport);
-				ProxyEntry.add(local, listenssl, remote, remotessl);
+				try {
+					ProxyEntry.add(local, listenssl, remote, remotessl);
+				} catch (OpenR66ProtocolSystemException e) {
+					logger.error("Issue on configuration: {}", e.getMessage());
+					return false;
+				}
 			}
 			if (ProxyEntry.proxyEntries.isEmpty()) {
 				logger.error("No proxy configuration found");
