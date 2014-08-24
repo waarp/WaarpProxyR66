@@ -25,7 +25,7 @@ import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
-import org.jboss.netty.handler.traffic.AbstractTrafficShapingHandler;
+import io.netty.handler.traffic.AbstractTrafficShapingHandler;
 import org.waarp.common.crypto.Des;
 import org.waarp.common.crypto.ssl.WaarpSecureKeyStore;
 import org.waarp.common.crypto.ssl.WaarpSslContextFactory;
@@ -35,8 +35,8 @@ import org.waarp.common.database.exception.WaarpDatabaseException;
 import org.waarp.common.exception.CryptoException;
 import org.waarp.common.file.DirInterface;
 import org.waarp.common.file.filesystembased.FilesystemBasedDirImpl;
-import org.waarp.common.logging.WaarpInternalLogger;
-import org.waarp.common.logging.WaarpInternalLoggerFactory;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.xml.XmlDecl;
 import org.waarp.common.xml.XmlHash;
 import org.waarp.common.xml.XmlType;
@@ -47,7 +47,7 @@ import org.waarp.openr66.database.data.DbConfiguration;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 import org.waarp.openr66.protocol.networkhandler.R66ConstraintLimitHandler;
-import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerPipelineFactory;
+import org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer;
 import org.waarp.openr66.protocol.utils.FileUtils;
 import org.waarp.openr66.proxy.network.ProxyEntry;
 import org.waarp.snmp.SnmpConfiguration;
@@ -62,7 +62,7 @@ public class FileBasedConfiguration {
 	/**
 	 * Internal Logger
 	 */
-	private static final WaarpInternalLogger logger = WaarpInternalLoggerFactory
+	private static final WaarpLogger logger = WaarpLoggerFactory
 			.getLogger(FileBasedConfiguration.class);
 
 	/**
@@ -704,7 +704,7 @@ public class FileBasedConfiguration {
 		}
 		logger.info("Limit of Runner: {}",
 				config.RUNNER_THREAD);
-		if (DbConstant.admin.isConnected && updateLimit) {
+		if (DbConstant.admin.isActive && updateLimit) {
 			value = hashConfig.get(XML_SERVER_HOSTID);
 			if (value != null && (!value.isEmpty())) {
 				config.HOST_ID = value.getString();
@@ -809,7 +809,7 @@ public class FileBasedConfiguration {
 		if (value == null || (value.isEmpty())) {
 			logger.info("Unable to find Key Path");
 			try {
-				NetworkSslServerPipelineFactory.waarpSecureKeyStore =
+				NetworkSslServerInitializer.waarpSecureKeyStore =
 						new WaarpSecureKeyStore("secret", "secret");
 			} catch (CryptoException e) {
 				logger.error("Bad SecureKeyStore construction");
@@ -842,7 +842,7 @@ public class FileBasedConfiguration {
 				return false;
 			}
 			try {
-				NetworkSslServerPipelineFactory.waarpSecureKeyStore =
+				NetworkSslServerInitializer.waarpSecureKeyStore =
 						new WaarpSecureKeyStore(keypath, keystorepass,
 								keypass);
 			} catch (CryptoException e) {
@@ -855,7 +855,7 @@ public class FileBasedConfiguration {
 		value = hashConfig.get(XML_PATH_TRUSTKEYPATH);
 		if (value == null || (value.isEmpty())) {
 			logger.info("Unable to find TRUST Key Path");
-			NetworkSslServerPipelineFactory.waarpSecureKeyStore.initEmptyTrustStore();
+			NetworkSslServerInitializer.waarpSecureKeyStore.initEmptyTrustStore();
 		} else {
 			String keypath = value.getString();
 			if ((keypath == null) || (keypath.isEmpty())) {
@@ -878,16 +878,16 @@ public class FileBasedConfiguration {
 				useClientAuthent = value.getBoolean();
 			}
 			try {
-				NetworkSslServerPipelineFactory.waarpSecureKeyStore.initTrustStore(keypath,
+				NetworkSslServerInitializer.waarpSecureKeyStore.initTrustStore(keypath,
 						keystorepass, useClientAuthent);
 			} catch (CryptoException e) {
 				logger.error("Bad TrustKeyStore construction");
 				return false;
 			}
 		}
-		NetworkSslServerPipelineFactory.waarpSslContextFactory =
+		NetworkSslServerInitializer.waarpSslContextFactory =
 				new WaarpSslContextFactory(
-						NetworkSslServerPipelineFactory.waarpSecureKeyStore);
+						NetworkSslServerInitializer.waarpSecureKeyStore);
 		return true;
 	}
 

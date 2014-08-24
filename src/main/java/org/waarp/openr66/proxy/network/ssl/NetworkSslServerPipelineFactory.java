@@ -19,47 +19,47 @@ package org.waarp.openr66.proxy.network.ssl;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.ssl.SslHandler;
-import org.jboss.netty.handler.timeout.IdleStateHandler;
-import org.jboss.netty.handler.traffic.ChannelTrafficShapingHandler;
-import org.jboss.netty.handler.traffic.GlobalTrafficShapingHandler;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.Channels;
+import io.netty.handler.execution.ExecutionHandler;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.proxy.network.NetworkPacketCodec;
-import org.waarp.openr66.proxy.network.NetworkServerPipelineFactory;
+import org.waarp.openr66.proxy.network.NetworkServerInitializer;
 
 /**
  * @author Frederic Bregier
  * 
  */
-public class NetworkSslServerPipelineFactory extends
-		org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerPipelineFactory {
+public class NetworkSslServerInitializer extends
+		org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer {
 	/**
 	 * 
 	 * @param isClient
 	 *            True if this Factory is to be used in Client mode
 	 */
-	public NetworkSslServerPipelineFactory(boolean isClient) {
+	public NetworkSslServerInitializer(boolean isClient) {
 		super(isClient);
 	}
 
-	public ChannelPipeline getPipeline() {
-		final ChannelPipeline pipeline = Channels.pipeline();
+	protected void initChannel(Channel ch) {
+		final ChannelPipeline pipeline = ch.pipeline();
 		// Add SSL handler first to encrypt and decrypt everything.
 		SslHandler sslHandler = null;
 		if (isClient) {
 			// Not server: no clientAuthent, no renegotiation
 			sslHandler =
-					waarpSslContextFactory.initPipelineFactory(false,
+					waarpSslContextFactory.initInitializer(false,
 							false, false);
 			sslHandler.setIssueHandshake(true);
 		} else {
 			// Server: no renegotiation still, but possible clientAuthent
 			sslHandler =
-					waarpSslContextFactory.initPipelineFactory(true,
+					waarpSslContextFactory.initInitializer(true,
 							waarpSslContextFactory.needClientAuthentication(),
 							true);
 		}
@@ -69,25 +69,25 @@ public class NetworkSslServerPipelineFactory extends
 		GlobalTrafficShapingHandler handler = Configuration.configuration
 				.getGlobalTrafficShapingHandler();
 		if (handler != null) {
-			pipeline.addLast(NetworkServerPipelineFactory.LIMIT, handler);
+			pipeline.addLast(NetworkServerInitializer.LIMIT, handler);
 		}
 		ChannelTrafficShapingHandler trafficChannel = null;
 		try {
 			trafficChannel =
 					Configuration.configuration
 							.newChannelTrafficShapingHandler();
-			pipeline.addLast(NetworkServerPipelineFactory.LIMITCHANNEL, trafficChannel);
+			pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel);
 		} catch (OpenR66ProtocolNoDataException e) {
 		}
 		pipeline.addLast("pipelineExecutor", new ExecutionHandler(
 				Configuration.configuration.getServerPipelineExecutor()));
 
-		pipeline.addLast(NetworkServerPipelineFactory.TIMEOUT,
+		pipeline.addLast(NetworkServerInitializer.TIMEOUT,
 				new IdleStateHandler(timer,
 						0, 0,
 						Configuration.configuration.TIMEOUTCON,
 						TimeUnit.MILLISECONDS));
-		pipeline.addLast(NetworkServerPipelineFactory.HANDLER, new NetworkSslServerHandler(
+		pipeline.addLast(NetworkServerInitializer.HANDLER, new NetworkSslServerHandler(
 				!this.isClient));
 		return pipeline;
 	}

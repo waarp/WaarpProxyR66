@@ -20,18 +20,18 @@ package org.waarp.openr66.proxy.network;
 import java.net.BindException;
 import java.net.SocketAddress;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelStateEvent;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.channel.ExceptionEvent;
-import org.jboss.netty.channel.MessageEvent;
-import org.jboss.netty.handler.timeout.IdleStateAwareChannelHandler;
-import org.jboss.netty.handler.timeout.IdleStateEvent;
-import org.jboss.netty.handler.timeout.ReadTimeoutException;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelStateEvent;
+import io.netty.channel.Channels;
+import io.netty.channel.ExceptionEvent;
+import io.netty.channel.MessageEvent;
+import io.netty.handler.timeout.IdleStateAwareChannelHandler;
+import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.handler.timeout.ReadTimeoutException;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
-import org.waarp.common.logging.WaarpInternalLogger;
-import org.waarp.common.logging.WaarpInternalLoggerFactory;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ExceptionTrappedFactory;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolBusinessNoWriteBackException;
@@ -59,7 +59,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 	/**
 	 * Internal Logger
 	 */
-	private static final WaarpInternalLogger logger = WaarpInternalLoggerFactory
+	private static final WaarpLogger logger = WaarpLoggerFactory
 			.getLogger(NetworkServerHandler.class);
 
 	/**
@@ -138,7 +138,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 	@Override
 	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
 			throws OpenR66ProtocolNetworkException {
-		this.networkChannel = e.getChannel();
+		this.networkChannel = e.channel();
 		this.localAddress = this.networkChannel.getLocalAddress();
 		if (isServer) {
 			ProxyEntry entry = ProxyEntry.get(localAddress.toString());
@@ -172,7 +172,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 			}
 			this.bridge.remoteConnected();
 		}
-		logger.debug("Network Channel Connected: {} ", e.getChannel().getId());
+		logger.debug("Network Channel Connected: {} ", e.channel().getId());
 	}
 
 	@Override
@@ -186,7 +186,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 				Configuration.configuration.r66Mib.notifyWarning(
 						"KeepAlive get no answer", "Closing network connection");
 			}
-			ChannelCloseTimer.closeFutureChannel(e.getChannel());
+			ChannelCloseTimer.closeFutureChannel(e.channel());
 		} else {
 			keepAlivedSent = true;
 			KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
@@ -194,7 +194,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 					new NetworkPacket(ChannelUtils.NOCHANNEL,
 							ChannelUtils.NOCHANNEL, keepAlivePacket, null);
 			logger.info("Write KAlive");
-			Channels.write(e.getChannel(), response);
+			Channels.writeAndFlush(e.channel(), response);
 		}
 	}
 
@@ -203,7 +203,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 	}
 
 	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
+	public void channelRead(ChannelHandlerContext ctx, MessageEvent e) {
 		final NetworkPacket packet = (NetworkPacket) e.getMessage();
 		if (packet.getCode() == LocalPacketFactory.NOOPPACKET) {
 			// Do nothing
@@ -218,8 +218,8 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 						+
 						packet.toString() +
 						" : " +
-						e.getChannel().getRemoteAddress());
-				WaarpSslUtility.closingSslChannel(e.getChannel());
+						e.channel().getRemoteAddress());
+				WaarpSslUtility.closingSslChannel(e.channel());
 				return;
 			}
 		} else if (packet.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
@@ -233,7 +233,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 							new NetworkPacket(ChannelUtils.NOCHANNEL,
 									ChannelUtils.NOCHANNEL, keepAlivePacket, null);
 					logger.info("Answer KAlive");
-					Channels.write(e.getChannel(), response);
+					Channels.writeAndFlush(e.channel(), response);
 				} else {
 					logger.info("Get KAlive");
 				}
@@ -243,54 +243,54 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 		}
 		// forward message
 		if (proxyChannel != null) {
-			Channels.write(proxyChannel, packet);
+			Channels.writeAndFlush(proxyChannel, packet);
 		}
 	}
 
 	@Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-		logger.debug("Network Channel Exception: {}", e.getChannel().getId(), e
+		logger.debug("Network Channel Exception: {}", e.channel().getId(), e
 				.getCause());
 		if (e.getCause() instanceof ReadTimeoutException) {
 			ReadTimeoutException exception = (ReadTimeoutException) e.getCause();
 			// No read for too long
 			logger.error("ReadTimeout so Will close NETWORK channel {}", exception.getMessage());
-			ChannelCloseTimer.closeFutureChannel(e.getChannel());
+			ChannelCloseTimer.closeFutureChannel(e.channel());
 			return;
 		}
 		if (e.getCause() instanceof BindException) {
 			// received when not yet connected
 			logger.debug("BindException");
-			ChannelCloseTimer.closeFutureChannel(e.getChannel());
+			ChannelCloseTimer.closeFutureChannel(e.channel());
 			return;
 		}
 		OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-				.getExceptionFromTrappedException(e.getChannel(), e);
+				.getExceptionFromTrappedException(e.channel(), e);
 		if (exception != null) {
 			if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {
 				logger.debug("Will close NETWORK channel");
-				ChannelCloseTimer.closeFutureChannel(e.getChannel());
+				ChannelCloseTimer.closeFutureChannel(e.channel());
 				return;
 			} else if (exception instanceof OpenR66ProtocolNoConnectionException) {
 				logger.debug("Connection impossible with NETWORK channel {}",
 						exception.getMessage());
-				Channels.close(e.getChannel());
+				Channels.close(e.channel());
 				return;
 			} else {
 				logger.debug(
-						"Network Channel Exception: {} {}", e.getChannel().getId(),
+						"Network Channel Exception: {} {}", e.channel().getId(),
 						exception.getMessage());
 			}
 			final ConnectionErrorPacket errorPacket = new ConnectionErrorPacket(
 					exception.getMessage(), null);
-			writeError(e.getChannel(), ChannelUtils.NOCHANNEL,
+			writeError(e.channel(), ChannelUtils.NOCHANNEL,
 					ChannelUtils.NOCHANNEL, errorPacket);
 			if (proxyChannel != null) {
 				writeError(proxyChannel, ChannelUtils.NOCHANNEL,
 						ChannelUtils.NOCHANNEL, errorPacket);
 			}
 			logger.debug("Will close NETWORK channel: {}", exception.getMessage());
-			ChannelCloseTimer.closeFutureChannel(e.getChannel());
+			ChannelCloseTimer.closeFutureChannel(e.channel());
 		} else {
 			// Nothing to do
 			return;
@@ -313,7 +313,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 		} catch (OpenR66ProtocolPacketException e) {
 		}
 		try {
-			Channels.write(channel, networkPacket).await();
+			Channels.writeAndFlush(channel, networkPacket).await();
 		} catch (InterruptedException e) {
 		}
 	}

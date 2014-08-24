@@ -17,9 +17,9 @@
  */
 package org.waarp.openr66.proxy;
 
-import org.jboss.netty.logging.InternalLoggerFactory;
-import org.waarp.common.logging.WaarpInternalLogger;
-import org.waarp.common.logging.WaarpInternalLoggerFactory;
+import io.netty.logging.WaarpLoggerFactory;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.logging.WaarpSlf4JLoggerFactory;
 import org.waarp.openr66.protocol.utils.R66ShutdownHook;
 import org.waarp.openr66.proxy.configuration.Configuration;
@@ -30,14 +30,14 @@ import org.waarp.openr66.proxy.configuration.FileBasedConfiguration;
  * 
  */
 public class R66Proxy {
-	private static WaarpInternalLogger logger;
+	private static WaarpLogger logger;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		InternalLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
-		logger = WaarpInternalLoggerFactory.getLogger(R66Proxy.class);
+		WaarpLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+		logger = WaarpLoggerFactory.getLogger(R66Proxy.class);
 		if (args.length < 1) {
 			logger
 					.error("Needs the configuration file as first argument");
@@ -57,7 +57,7 @@ public class R66Proxy {
 
 	public static boolean initialize(String config) {
 		if (logger == null) {
-			logger = WaarpInternalLoggerFactory.getLogger(R66Proxy.class);
+			logger = WaarpLoggerFactory.getLogger(R66Proxy.class);
 		}
 		if (!FileBasedConfiguration
 				.setConfigurationProxyFromXml(Configuration.configuration, config)) {

@@ -20,25 +20,25 @@ package org.waarp.openr66.proxy.configuration;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import org.jboss.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
-import org.jboss.netty.logging.InternalLoggerFactory;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import io.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
+import io.netty.logging.WaarpLoggerFactory;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
-import org.waarp.common.logging.WaarpInternalLogger;
-import org.waarp.common.logging.WaarpInternalLoggerFactory;
+import org.waarp.common.logging.WaarpLogger;
+import org.waarp.common.logging.WaarpLoggerFactory;
 import org.waarp.common.utility.WaarpThreadFactory;
 import org.waarp.openr66.protocol.networkhandler.GlobalTrafficHandler;
 import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacketSizeEstimator;
 import org.waarp.openr66.protocol.utils.R66ShutdownHook;
 import org.waarp.openr66.proxy.network.LocalTransaction;
-import org.waarp.openr66.proxy.network.NetworkServerPipelineFactory;
+import org.waarp.openr66.proxy.network.NetworkServerInitializer;
 import org.waarp.openr66.proxy.network.ProxyBridge;
 import org.waarp.openr66.proxy.network.ProxyEntry;
-import org.waarp.openr66.proxy.network.ssl.NetworkSslServerPipelineFactory;
-import org.waarp.openr66.proxy.protocol.http.HttpPipelineFactory;
-import org.waarp.openr66.proxy.protocol.http.adminssl.HttpSslPipelineFactory;
+import org.waarp.openr66.proxy.network.ssl.NetworkSslServerInitializer;
+import org.waarp.openr66.proxy.protocol.http.HttpInitializer;
+import org.waarp.openr66.proxy.protocol.http.adminssl.HttpSslInitializer;
 
 /**
  * @author "Frederic Bregier"
@@ -48,7 +48,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 	/**
 	 * Internal Logger
 	 */
-	private static final WaarpInternalLogger logger = WaarpInternalLoggerFactory
+	private static final WaarpLogger logger = WaarpLoggerFactory
 			.getLogger(Configuration.class);
 
 	/**
@@ -71,7 +71,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 		if (configured) {
 			return;
 		}
-		InternalLoggerFactory.setDefaultFactory(InternalLoggerFactory
+		WaarpLoggerFactory.setDefaultFactory(WaarpLoggerFactory
 				.getDefaultFactory());
 		objectSizeEstimator = new NetworkPacketSizeEstimator();
 		httpPipelineInit();
@@ -115,8 +115,8 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 				execServerBoss, execServerWorker, SERVER_THREAD);
 		if (useNOSSL) {
 			serverBootstrap = new ServerBootstrap(serverChannelFactory);
-			networkServerPipelineFactory = new NetworkServerPipelineFactory(true);
-			serverBootstrap.setPipelineFactory(networkServerPipelineFactory);
+			networkServerInitializer = new NetworkServerInitializer(true);
+			serverBootstrap.setInitializer(networkServerInitializer);
 			serverBootstrap.setOption("child.tcpNoDelay", true);
 			serverBootstrap.setOption("child.keepAlive", true);
 			serverBootstrap.setOption("child.reuseAddress", true);
@@ -131,14 +131,14 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 				}
 			}
 		} else {
-			networkServerPipelineFactory = null;
+			networkServerInitializer = null;
 			logger.warn("NOSSL mode is deactivated");
 		}
 
 		if (useSSL && HOST_SSLID != null) {
 			serverSslBootstrap = new ServerBootstrap(serverChannelFactory);
-			networkSslServerPipelineFactory = new NetworkSslServerPipelineFactory(false);
-			serverSslBootstrap.setPipelineFactory(networkSslServerPipelineFactory);
+			networkSslServerInitializer = new NetworkSslServerInitializer(false);
+			serverSslBootstrap.setInitializer(networkSslServerInitializer);
 			serverSslBootstrap.setOption("child.tcpNoDelay", true);
 			serverSslBootstrap.setOption("child.keepAlive", true);
 			serverSslBootstrap.setOption("child.reuseAddress", true);
@@ -153,7 +153,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 				}
 			}
 		} else {
-			networkSslServerPipelineFactory = null;
+			networkSslServerInitializer = null;
 			logger.warn("SSL mode is desactivated");
 		}
 
@@ -179,7 +179,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 		httpBootstrap = new ServerBootstrap(
 				httpChannelFactory);
 		// Set up the event pipeline factory.
-		httpBootstrap.setPipelineFactory(new HttpPipelineFactory(useHttpCompression));
+		httpBootstrap.setInitializer(new HttpInitializer(useHttpCompression));
 		httpBootstrap.setOption("child.tcpNoDelay", true);
 		httpBootstrap.setOption("child.keepAlive", true);
 		httpBootstrap.setOption("child.reuseAddress", true);
@@ -199,7 +199,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 		httpsBootstrap = new ServerBootstrap(
 				httpsChannelFactory);
 		// Set up the event pipeline factory.
-		httpsBootstrap.setPipelineFactory(new HttpSslPipelineFactory(useHttpCompression,
+		httpsBootstrap.setInitializer(new HttpSslInitializer(useHttpCompression,
 				false));
 		httpsBootstrap.setOption("child.tcpNoDelay", true);
 		httpsBootstrap.setOption("child.keepAlive", true);

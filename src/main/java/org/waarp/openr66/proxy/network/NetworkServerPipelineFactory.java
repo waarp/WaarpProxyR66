@@ -19,12 +19,12 @@ package org.waarp.openr66.proxy.network;
 
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.netty.channel.ChannelPipeline;
-import org.jboss.netty.channel.Channels;
-import org.jboss.netty.handler.execution.ExecutionHandler;
-import org.jboss.netty.handler.timeout.IdleStateHandler;
-import org.jboss.netty.handler.traffic.ChannelTrafficShapingHandler;
-import org.jboss.netty.handler.traffic.GlobalTrafficShapingHandler;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.Channels;
+import io.netty.handler.execution.ExecutionHandler;
+import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 
@@ -33,16 +33,16 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
  * 
  * @author Frederic Bregier
  */
-public class NetworkServerPipelineFactory extends
-		org.waarp.openr66.protocol.networkhandler.NetworkServerPipelineFactory {
+public class NetworkServerInitializer extends
+		org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer {
 	public static final String HANDLER = "handler";
 
-	public NetworkServerPipelineFactory(boolean server) {
+	public NetworkServerInitializer(boolean server) {
 		super(server);
 	}
 
-	public ChannelPipeline getPipeline() {
-		final ChannelPipeline pipeline = Channels.pipeline();
+	protected void initChannel(Channel ch) {
+		final ChannelPipeline pipeline = ch.pipeline();
 		pipeline.addLast("codec", new NetworkPacketCodec());
 		GlobalTrafficShapingHandler handler =
 				Configuration.configuration.getGlobalTrafficShapingHandler();

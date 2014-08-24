@@ -17,7 +17,7 @@
  */
 package org.waarp.openr66.proxy.network;
 
-import org.jboss.netty.channel.Channel;
+import io.netty.channel.Channel;
 import org.waarp.openr66.protocol.utils.R66Future;
 import org.waarp.openr66.proxy.configuration.Configuration;
 
@@ -57,8 +57,8 @@ public class ProxyBridge {
 			return;
 		}
 		this.proxified =
-				(NetworkServerHandler) proxy.getPipeline()
-						.get(NetworkServerPipelineFactory.HANDLER);
+				(NetworkServerHandler) proxy.pipeline()
+						.get(NetworkServerInitializer.HANDLER);
 		this.proxified.setBridge(this);
 	}
 
