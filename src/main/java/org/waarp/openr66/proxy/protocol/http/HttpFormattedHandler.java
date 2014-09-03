@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufs;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -259,7 +259,7 @@ public class HttpFormattedHandler extends SimpleChannelInboundHandler {
 	 */
 	private void writeResponse(MessageEvent e) {
 		// Convert the response content to a ByteBuf.
-		ByteBuf buf = ByteBufs.copiedBuffer(responseContent
+		ByteBuf buf = Unpooled.copiedBuffer(responseContent
 				.toString(), WaarpStringUtils.UTF8);
 		responseContent.setLength(0);
 		// Decide whether to close the connection or not.
@@ -347,7 +347,7 @@ public class HttpFormattedHandler extends SimpleChannelInboundHandler {
 		responseContent.append("OpenR66 Web Failure: ");
 		responseContent.append(status.toString());
 		responseContent.append(REQUEST.error.readEnd());
-		response.setContent(ByteBufs.copiedBuffer(responseContent
+		response.setContent(Unpooled.copiedBuffer(responseContent
 				.toString(), WaarpStringUtils.UTF8));
 		// Close the connection as soon as the error message is sent.
 		ctx.channel().writeAndFlush(response).addListener(
@@ -355,7 +355,7 @@ public class HttpFormattedHandler extends SimpleChannelInboundHandler {
 	}
 
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 			throws Exception {
 		OpenR66Exception exception = OpenR66ExceptionTrappedFactory
 				.getExceptionFromTrappedException(e.channel(), e);

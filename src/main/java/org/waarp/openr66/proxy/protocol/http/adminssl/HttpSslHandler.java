@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufs;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -618,7 +618,7 @@ public class HttpSslHandler extends SimpleChannelInboundHandler {
 	 */
 	private void writeResponse(Channel channel) {
 		// Convert the response content to a ByteBuf.
-		ByteBuf buf = ByteBufs.copiedBuffer(responseContent.toString(),
+		ByteBuf buf = Unpooled.copiedBuffer(responseContent.toString(),
 				WaarpStringUtils.UTF8);
 		responseContent.setLength(0);
 
@@ -668,7 +668,7 @@ public class HttpSslHandler extends SimpleChannelInboundHandler {
 				HttpHeaders.Names.CONTENT_TYPE, "text/html");
 		responseContent.setLength(0);
 		responseContent.append(error(status.toString()));
-		response.setContent(ByteBufs.copiedBuffer(responseContent.toString(),
+		response.setContent(Unpooled.copiedBuffer(responseContent.toString(),
 				WaarpStringUtils.UTF8));
 		clearSession();
 		// Close the connection as soon as the error message is sent.
@@ -676,7 +676,7 @@ public class HttpSslHandler extends SimpleChannelInboundHandler {
 	}
 
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
 			throws Exception {
 		OpenR66Exception exception = OpenR66ExceptionTrappedFactory
 				.getExceptionFromTrappedException(e.channel(), e);

@@ -80,7 +80,7 @@ public class NetworkSslServerInitializer extends
 		} catch (OpenR66ProtocolNoDataException e) {
 		}
 		pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-				Configuration.configuration.getServerPipelineExecutor()));
+				Configuration.configuration.getHandlerGroup()));
 
 		pipeline.addLast(NetworkServerInitializer.TIMEOUT,
 				new IdleStateHandler(timer,

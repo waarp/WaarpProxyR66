@@ -24,7 +24,6 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import io.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
-import io.netty.logging.WaarpLoggerFactory;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;

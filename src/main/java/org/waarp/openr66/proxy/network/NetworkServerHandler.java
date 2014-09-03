@@ -172,7 +172,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 			}
 			this.bridge.remoteConnected();
 		}
-		logger.debug("Network Channel Connected: {} ", e.channel().getId());
+		logger.debug("Network Channel Connected: {} ", e.channel().id());
 	}
 
 	@Override
@@ -248,8 +248,8 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 	}
 
 	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-		logger.debug("Network Channel Exception: {}", e.channel().getId(), e
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+		logger.debug("Network Channel Exception: {}", e.channel().id(), e
 				.getCause());
 		if (e.getCause() instanceof ReadTimeoutException) {
 			ReadTimeoutException exception = (ReadTimeoutException) e.getCause();
@@ -278,7 +278,7 @@ public class NetworkServerHandler extends IdleStateAwareChannelHandler {
 				return;
 			} else {
 				logger.debug(
-						"Network Channel Exception: {} {}", e.channel().getId(),
+						"Network Channel Exception: {} {}", e.channel().id(),
 						exception.getMessage());
 			}
 			final ConnectionErrorPacket errorPacket = new ConnectionErrorPacket(

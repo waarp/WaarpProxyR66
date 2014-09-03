@@ -60,7 +60,7 @@ public class NetworkServerInitializer extends
 		} catch (OpenR66ProtocolNoDataException e) {
 		}
 		pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-				Configuration.configuration.getServerPipelineExecutor()));
+				Configuration.configuration.getHandlerGroup()));
 
 		pipeline.addLast(TIMEOUT,
 				new IdleStateHandler(timer,
