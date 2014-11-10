@@ -30,50 +30,50 @@ import org.waarp.openr66.proxy.configuration.FileBasedConfiguration;
  * 
  */
 public class R66Proxy {
-	private static WaarpInternalLogger logger;
+    private static WaarpInternalLogger logger;
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		InternalLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
-		logger = WaarpInternalLoggerFactory.getLogger(R66Proxy.class);
-		if (args.length < 1) {
-			logger
-					.error("Needs the configuration file as first argument");
-			return;
-		}
-		Configuration.configuration = new Configuration();
-		if (initialize(args[0])) {
-			logger.warn("Proxy OpenR66 starts for " + Configuration.configuration.HOST_ID);
-			System.err.println("Proxy OpenR66 starts for " + Configuration.configuration.HOST_ID);
-		} else {
-			logger.error("Cannot start Proxy OpenR66 for " + Configuration.configuration.HOST_ID);
-			System.err.println("Cannot start Proxy OpenR66 for "
-					+ Configuration.configuration.HOST_ID);
-			System.exit(1);
-		}
-	}
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        InternalLoggerFactory.setDefaultFactory(new WaarpSlf4JLoggerFactory(null));
+        logger = WaarpInternalLoggerFactory.getLogger(R66Proxy.class);
+        if (args.length < 1) {
+            logger
+                    .error("Needs the configuration file as first argument");
+            return;
+        }
+        Configuration.configuration = new Configuration();
+        if (initialize(args[0])) {
+            logger.warn("Proxy OpenR66 starts for " + Configuration.configuration.HOST_ID);
+            System.err.println("Proxy OpenR66 starts for " + Configuration.configuration.HOST_ID);
+        } else {
+            logger.error("Cannot start Proxy OpenR66 for " + Configuration.configuration.HOST_ID);
+            System.err.println("Cannot start Proxy OpenR66 for "
+                    + Configuration.configuration.HOST_ID);
+            System.exit(1);
+        }
+    }
 
-	public static boolean initialize(String config) {
-		if (logger == null) {
-			logger = WaarpInternalLoggerFactory.getLogger(R66Proxy.class);
-		}
-		if (!FileBasedConfiguration
-				.setConfigurationProxyFromXml(Configuration.configuration, config)) {
-			logger
-					.error("Needs a correct configuration file as first argument");
-			return false;
-		}
-		try {
-			Configuration.configuration.serverStartup();
-		} catch (Throwable e) {
-			logger
-					.error("Startup of Proxy is in error", e);
-			R66ShutdownHook.terminate(false);
-			return false;
-		}
-		return true;
-	}
+    public static boolean initialize(String config) {
+        if (logger == null) {
+            logger = WaarpInternalLoggerFactory.getLogger(R66Proxy.class);
+        }
+        if (!FileBasedConfiguration
+                .setConfigurationProxyFromXml(Configuration.configuration, config)) {
+            logger
+                    .error("Needs a correct configuration file as first argument");
+            return false;
+        }
+        try {
+            Configuration.configuration.serverStartup();
+        } catch (Throwable e) {
+            logger
+                    .error("Startup of Proxy is in error", e);
+            R66ShutdownHook.terminate(false);
+            return false;
+        }
+        return true;
+    }
 
 }
