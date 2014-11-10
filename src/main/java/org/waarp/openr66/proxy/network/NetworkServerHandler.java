@@ -55,274 +55,274 @@ import org.waarp.openr66.proxy.configuration.Configuration;
  * @author frederic bregier
  */
 public class NetworkServerHandler extends IdleStateAwareChannelHandler {
-	// extends SimpleChannelHandler {
-	/**
-	 * Internal Logger
-	 */
-	private static final WaarpLogger logger = WaarpLoggerFactory
-			.getLogger(NetworkServerHandler.class);
+    // extends SimpleChannelHandler {
+    /**
+     * Internal Logger
+     */
+    private static final WaarpLogger logger = WaarpLoggerFactory
+            .getLogger(NetworkServerHandler.class);
 
-	/**
-	 * The underlying Network Channel
-	 */
-	private volatile Channel networkChannel;
-	/**
-	 * The underlying Proxified associated Channel
-	 */
-	private volatile Channel proxyChannel;
-	/**
-	 * The associated bridge
-	 */
-	private volatile ProxyBridge bridge;
-	/**
-	 * The associated Local Address
-	 */
-	private volatile SocketAddress localAddress;
-	/**
-	 * Does this Handler is for SSL
-	 */
-	protected volatile boolean isSSL = false;
-	/**
-	 * Is this Handler a server side
-	 */
-	protected boolean isServer = false;
-	/**
-	 * To handle the keep alive
-	 */
-	protected volatile boolean keepAlivedSent = false;
-	/**
-	 * Future to wait for Client to be setup
-	 */
-	protected volatile R66Future clientFuture;
+    /**
+     * The underlying Network Channel
+     */
+    private volatile Channel networkChannel;
+    /**
+     * The underlying Proxified associated Channel
+     */
+    private volatile Channel proxyChannel;
+    /**
+     * The associated bridge
+     */
+    private volatile ProxyBridge bridge;
+    /**
+     * The associated Local Address
+     */
+    private volatile SocketAddress localAddress;
+    /**
+     * Does this Handler is for SSL
+     */
+    protected volatile boolean isSSL = false;
+    /**
+     * Is this Handler a server side
+     */
+    protected boolean isServer = false;
+    /**
+     * To handle the keep alive
+     */
+    protected volatile boolean keepAlivedSent = false;
+    /**
+     * Future to wait for Client to be setup
+     */
+    protected volatile R66Future clientFuture;
 
-	/**
-	 * 
-	 * @param isServer
-	 */
-	public NetworkServerHandler(boolean isServer) {
-		this.isServer = isServer;
-		if (!this.isServer) {
-			clientFuture = new R66Future(true);
-		}
-	}
+    /**
+     * 
+     * @param isServer
+     */
+    public NetworkServerHandler(boolean isServer) {
+        this.isServer = isServer;
+        if (!this.isServer) {
+            clientFuture = new R66Future(true);
+        }
+    }
 
-	public void setBridge(ProxyBridge bridge) {
-		this.bridge = bridge;
-		if (this.bridge != null) {
-			this.proxyChannel = bridge.getSource().getNetworkChannel();
-		}
-		this.clientFuture.setSuccess();
-		logger.debug("setBridge: " + isServer + " "
-				+ (bridge != null ? bridge.getProxyEntry().toString()
-						+ " proxyChannelId: " + this.proxyChannel.getId() : "nobridge"));
-	}
+    public void setBridge(ProxyBridge bridge) {
+        this.bridge = bridge;
+        if (this.bridge != null) {
+            this.proxyChannel = bridge.getSource().getNetworkChannel();
+        }
+        this.clientFuture.setSuccess();
+        logger.debug("setBridge: " + isServer + " "
+                + (bridge != null ? bridge.getProxyEntry().toString()
+                        + " proxyChannelId: " + this.proxyChannel.getId() : "nobridge"));
+    }
 
-	/**
-	 * @return the networkChannel
-	 */
-	public Channel getNetworkChannel() {
-		return networkChannel;
-	}
+    /**
+     * @return the networkChannel
+     */
+    public Channel getNetworkChannel() {
+        return networkChannel;
+    }
 
-	public void close() {
-		WaarpSslUtility.closingSslChannel(networkChannel);
-	}
+    public void close() {
+        WaarpSslUtility.closingSslChannel(networkChannel);
+    }
 
-	@Override
-	public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) {
-		if (proxyChannel != null) {
-			WaarpSslUtility.closingSslChannel(proxyChannel);
-		}
-	}
+    @Override
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) {
+        if (proxyChannel != null) {
+            WaarpSslUtility.closingSslChannel(proxyChannel);
+        }
+    }
 
-	@Override
-	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws OpenR66ProtocolNetworkException {
-		this.networkChannel = e.channel();
-		this.localAddress = this.networkChannel.getLocalAddress();
-		if (isServer) {
-			ProxyEntry entry = ProxyEntry.get(localAddress.toString());
-			if (entry == null) {
-				// error
-				// XXX FIXME need to send error !
-				WaarpSslUtility.closingSslChannel(networkChannel);
-				logger.error("No proxy configuration found for: " + localAddress.toString());
-				return;
-			}
-			this.bridge = new ProxyBridge(entry, this);
-			this.bridge.initializeProxy();
-			if (!this.bridge.waitForRemoteConnection()) {
-				logger.error("No connection for proxy: " + localAddress.toString());
-				WaarpSslUtility.closingSslChannel(this.networkChannel);
-				return;
-			}
-			this.proxyChannel = this.bridge.getProxified().networkChannel;
-			logger.warn("Connected: " + isServer + " "
-					+ (bridge != null ? bridge.getProxyEntry().toString()
-							+ " proxyChannelId: " + this.proxyChannel.getId() : "nobridge"));
-		} else {
-			try {
-				this.clientFuture.await(Configuration.configuration.TIMEOUTCON);
-			} catch (InterruptedException e1) {
-			}
-			if (this.bridge == null) {
-				logger.error("No connection for proxy: " + localAddress.toString());
-				WaarpSslUtility.closingSslChannel(this.networkChannel);
-				return;
-			}
-			this.bridge.remoteConnected();
-		}
-		logger.debug("Network Channel Connected: {} ", e.channel().id());
-	}
+    @Override
+    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+            throws OpenR66ProtocolNetworkException {
+        this.networkChannel = e.channel();
+        this.localAddress = this.networkChannel.getLocalAddress();
+        if (isServer) {
+            ProxyEntry entry = ProxyEntry.get(localAddress.toString());
+            if (entry == null) {
+                // error
+                // XXX FIXME need to send error !
+                WaarpSslUtility.closingSslChannel(networkChannel);
+                logger.error("No proxy configuration found for: " + localAddress.toString());
+                return;
+            }
+            this.bridge = new ProxyBridge(entry, this);
+            this.bridge.initializeProxy();
+            if (!this.bridge.waitForRemoteConnection()) {
+                logger.error("No connection for proxy: " + localAddress.toString());
+                WaarpSslUtility.closingSslChannel(this.networkChannel);
+                return;
+            }
+            this.proxyChannel = this.bridge.getProxified().networkChannel;
+            logger.warn("Connected: " + isServer + " "
+                    + (bridge != null ? bridge.getProxyEntry().toString()
+                            + " proxyChannelId: " + this.proxyChannel.getId() : "nobridge"));
+        } else {
+            try {
+                this.clientFuture.await(Configuration.configuration.TIMEOUTCON);
+            } catch (InterruptedException e1) {
+            }
+            if (this.bridge == null) {
+                logger.error("No connection for proxy: " + localAddress.toString());
+                WaarpSslUtility.closingSslChannel(this.networkChannel);
+                return;
+            }
+            this.bridge.remoteConnected();
+        }
+        logger.debug("Network Channel Connected: {} ", e.channel().id());
+    }
 
-	@Override
-	public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e)
-			throws Exception {
-		if (Configuration.configuration.isShutdown)
-			return;
-		if (keepAlivedSent) {
-			logger.error("Not getting KAlive: closing channel");
-			if (Configuration.configuration.r66Mib != null) {
-				Configuration.configuration.r66Mib.notifyWarning(
-						"KeepAlive get no answer", "Closing network connection");
-			}
-			ChannelCloseTimer.closeFutureChannel(e.channel());
-		} else {
-			keepAlivedSent = true;
-			KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
-			NetworkPacket response =
-					new NetworkPacket(ChannelUtils.NOCHANNEL,
-							ChannelUtils.NOCHANNEL, keepAlivePacket, null);
-			logger.info("Write KAlive");
-			Channels.writeAndFlush(e.channel(), response);
-		}
-	}
+    @Override
+    public void channelIdle(ChannelHandlerContext ctx, IdleStateEvent e)
+            throws Exception {
+        if (Configuration.configuration.isShutdown)
+            return;
+        if (keepAlivedSent) {
+            logger.error("Not getting KAlive: closing channel");
+            if (Configuration.configuration.r66Mib != null) {
+                Configuration.configuration.r66Mib.notifyWarning(
+                        "KeepAlive get no answer", "Closing network connection");
+            }
+            ChannelCloseTimer.closeFutureChannel(e.channel());
+        } else {
+            keepAlivedSent = true;
+            KeepAlivePacket keepAlivePacket = new KeepAlivePacket();
+            NetworkPacket response =
+                    new NetworkPacket(ChannelUtils.NOCHANNEL,
+                            ChannelUtils.NOCHANNEL, keepAlivePacket, null);
+            logger.info("Write KAlive");
+            Channels.writeAndFlush(e.channel(), response);
+        }
+    }
 
-	public void setKeepAlivedSent() {
-		keepAlivedSent = false;
-	}
+    public void setKeepAlivedSent() {
+        keepAlivedSent = false;
+    }
 
-	@Override
-	public void channelRead(ChannelHandlerContext ctx, MessageEvent e) {
-		final NetworkPacket packet = (NetworkPacket) e.getMessage();
-		if (packet.getCode() == LocalPacketFactory.NOOPPACKET) {
-			// Do nothing
-			return;
-		} else if (packet.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
-			logger.debug("NetworkRecv: {}", packet);
-			// Special code to STOP here
-			if (packet.getLocalId() == ChannelUtils.NOCHANNEL) {
-				// No way to know what is wrong: close all connections with
-				// remote host
-				logger.error("Will close NETWORK channel, Cannot continue connection with remote Host: "
-						+
-						packet.toString() +
-						" : " +
-						e.channel().getRemoteAddress());
-				WaarpSslUtility.closingSslChannel(e.channel());
-				return;
-			}
-		} else if (packet.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
-			keepAlivedSent = false;
-			try {
-				KeepAlivePacket keepAlivePacket = (KeepAlivePacket)
-						LocalPacketCodec.decodeNetworkPacket(packet.getBuffer());
-				if (keepAlivePacket.isToValidate()) {
-					keepAlivePacket.validate();
-					NetworkPacket response =
-							new NetworkPacket(ChannelUtils.NOCHANNEL,
-									ChannelUtils.NOCHANNEL, keepAlivePacket, null);
-					logger.info("Answer KAlive");
-					Channels.writeAndFlush(e.channel(), response);
-				} else {
-					logger.info("Get KAlive");
-				}
-			} catch (OpenR66ProtocolPacketException e1) {
-			}
-			return;
-		}
-		// forward message
-		if (proxyChannel != null) {
-			Channels.writeAndFlush(proxyChannel, packet);
-		}
-	}
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, MessageEvent e) {
+        final NetworkPacket packet = (NetworkPacket) e.getMessage();
+        if (packet.getCode() == LocalPacketFactory.NOOPPACKET) {
+            // Do nothing
+            return;
+        } else if (packet.getCode() == LocalPacketFactory.CONNECTERRORPACKET) {
+            logger.debug("NetworkRecv: {}", packet);
+            // Special code to STOP here
+            if (packet.getLocalId() == ChannelUtils.NOCHANNEL) {
+                // No way to know what is wrong: close all connections with
+                // remote host
+                logger.error("Will close NETWORK channel, Cannot continue connection with remote Host: "
+                        +
+                        packet.toString() +
+                        " : " +
+                        e.channel().getRemoteAddress());
+                WaarpSslUtility.closingSslChannel(e.channel());
+                return;
+            }
+        } else if (packet.getCode() == LocalPacketFactory.KEEPALIVEPACKET) {
+            keepAlivedSent = false;
+            try {
+                KeepAlivePacket keepAlivePacket = (KeepAlivePacket)
+                        LocalPacketCodec.decodeNetworkPacket(packet.getBuffer());
+                if (keepAlivePacket.isToValidate()) {
+                    keepAlivePacket.validate();
+                    NetworkPacket response =
+                            new NetworkPacket(ChannelUtils.NOCHANNEL,
+                                    ChannelUtils.NOCHANNEL, keepAlivePacket, null);
+                    logger.info("Answer KAlive");
+                    Channels.writeAndFlush(e.channel(), response);
+                } else {
+                    logger.info("Get KAlive");
+                }
+            } catch (OpenR66ProtocolPacketException e1) {
+            }
+            return;
+        }
+        // forward message
+        if (proxyChannel != null) {
+            Channels.writeAndFlush(proxyChannel, packet);
+        }
+    }
 
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-		logger.debug("Network Channel Exception: {}", e.channel().id(), e
-				.getCause());
-		if (e.getCause() instanceof ReadTimeoutException) {
-			ReadTimeoutException exception = (ReadTimeoutException) e.getCause();
-			// No read for too long
-			logger.error("ReadTimeout so Will close NETWORK channel {}", exception.getMessage());
-			ChannelCloseTimer.closeFutureChannel(e.channel());
-			return;
-		}
-		if (e.getCause() instanceof BindException) {
-			// received when not yet connected
-			logger.debug("BindException");
-			ChannelCloseTimer.closeFutureChannel(e.channel());
-			return;
-		}
-		OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-				.getExceptionFromTrappedException(e.channel(), e);
-		if (exception != null) {
-			if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {
-				logger.debug("Will close NETWORK channel");
-				ChannelCloseTimer.closeFutureChannel(e.channel());
-				return;
-			} else if (exception instanceof OpenR66ProtocolNoConnectionException) {
-				logger.debug("Connection impossible with NETWORK channel {}",
-						exception.getMessage());
-				Channels.close(e.channel());
-				return;
-			} else {
-				logger.debug(
-						"Network Channel Exception: {} {}", e.channel().id(),
-						exception.getMessage());
-			}
-			final ConnectionErrorPacket errorPacket = new ConnectionErrorPacket(
-					exception.getMessage(), null);
-			writeError(e.channel(), ChannelUtils.NOCHANNEL,
-					ChannelUtils.NOCHANNEL, errorPacket);
-			if (proxyChannel != null) {
-				writeError(proxyChannel, ChannelUtils.NOCHANNEL,
-						ChannelUtils.NOCHANNEL, errorPacket);
-			}
-			logger.debug("Will close NETWORK channel: {}", exception.getMessage());
-			ChannelCloseTimer.closeFutureChannel(e.channel());
-		} else {
-			// Nothing to do
-			return;
-		}
-	}
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        logger.debug("Network Channel Exception: {}", e.channel().id(), e
+                .getCause());
+        if (e.getCause() instanceof ReadTimeoutException) {
+            ReadTimeoutException exception = (ReadTimeoutException) e.getCause();
+            // No read for too long
+            logger.error("ReadTimeout so Will close NETWORK channel {}", exception.getMessage());
+            ChannelCloseTimer.closeFutureChannel(e.channel());
+            return;
+        }
+        if (e.getCause() instanceof BindException) {
+            // received when not yet connected
+            logger.debug("BindException");
+            ChannelCloseTimer.closeFutureChannel(e.channel());
+            return;
+        }
+        OpenR66Exception exception = OpenR66ExceptionTrappedFactory
+                .getExceptionFromTrappedException(e.channel(), e);
+        if (exception != null) {
+            if (exception instanceof OpenR66ProtocolBusinessNoWriteBackException) {
+                logger.debug("Will close NETWORK channel");
+                ChannelCloseTimer.closeFutureChannel(e.channel());
+                return;
+            } else if (exception instanceof OpenR66ProtocolNoConnectionException) {
+                logger.debug("Connection impossible with NETWORK channel {}",
+                        exception.getMessage());
+                Channels.close(e.channel());
+                return;
+            } else {
+                logger.debug(
+                        "Network Channel Exception: {} {}", e.channel().id(),
+                        exception.getMessage());
+            }
+            final ConnectionErrorPacket errorPacket = new ConnectionErrorPacket(
+                    exception.getMessage(), null);
+            writeError(e.channel(), ChannelUtils.NOCHANNEL,
+                    ChannelUtils.NOCHANNEL, errorPacket);
+            if (proxyChannel != null) {
+                writeError(proxyChannel, ChannelUtils.NOCHANNEL,
+                        ChannelUtils.NOCHANNEL, errorPacket);
+            }
+            logger.debug("Will close NETWORK channel: {}", exception.getMessage());
+            ChannelCloseTimer.closeFutureChannel(e.channel());
+        } else {
+            // Nothing to do
+            return;
+        }
+    }
 
-	/**
-	 * Write error back to remote client
-	 * 
-	 * @param channel
-	 * @param remoteId
-	 * @param localId
-	 * @param error
-	 */
-	void writeError(Channel channel, Integer remoteId, Integer localId,
-			AbstractLocalPacket error) {
-		NetworkPacket networkPacket = null;
-		try {
-			networkPacket = new NetworkPacket(localId, remoteId, error, null);
-		} catch (OpenR66ProtocolPacketException e) {
-		}
-		try {
-			Channels.writeAndFlush(channel, networkPacket).await();
-		} catch (InterruptedException e) {
-		}
-	}
+    /**
+     * Write error back to remote client
+     * 
+     * @param channel
+     * @param remoteId
+     * @param localId
+     * @param error
+     */
+    void writeError(Channel channel, Integer remoteId, Integer localId,
+            AbstractLocalPacket error) {
+        NetworkPacket networkPacket = null;
+        try {
+            networkPacket = new NetworkPacket(localId, remoteId, error, null);
+        } catch (OpenR66ProtocolPacketException e) {
+        }
+        try {
+            Channels.writeAndFlush(channel, networkPacket).await();
+        } catch (InterruptedException e) {
+        }
+    }
 
-	/**
-	 * 
-	 * @return True if this Handler is for SSL
-	 */
-	public boolean isSsl() {
-		return isSSL;
-	}
+    /**
+     * 
+     * @return True if this Handler is for SSL
+     */
+    public boolean isSsl() {
+        return isSSL;
+    }
 }

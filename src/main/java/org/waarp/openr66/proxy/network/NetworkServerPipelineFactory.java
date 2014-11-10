@@ -34,41 +34,41 @@ import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
  * @author Frederic Bregier
  */
 public class NetworkServerInitializer extends
-		org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer {
-	public static final String HANDLER = "handler";
+        org.waarp.openr66.protocol.networkhandler.NetworkServerInitializer {
+    public static final String HANDLER = "handler";
 
-	public NetworkServerInitializer(boolean server) {
-		super(server);
-	}
+    public NetworkServerInitializer(boolean server) {
+        super(server);
+    }
 
-	protected void initChannel(Channel ch) {
-		final ChannelPipeline pipeline = ch.pipeline();
-		pipeline.addLast("codec", new NetworkPacketCodec());
-		GlobalTrafficShapingHandler handler =
-				Configuration.configuration.getGlobalTrafficShapingHandler();
-		if (handler != null) {
-			pipeline.addLast(LIMIT, handler);
-		}
-		ChannelTrafficShapingHandler trafficChannel = null;
-		try {
-			trafficChannel =
-					Configuration.configuration
-							.newChannelTrafficShapingHandler();
-			if (trafficChannel != null) {
-				pipeline.addLast(LIMITCHANNEL, trafficChannel);
-			}
-		} catch (OpenR66ProtocolNoDataException e) {
-		}
-		pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-				Configuration.configuration.getHandlerGroup()));
+    protected void initChannel(Channel ch) {
+        final ChannelPipeline pipeline = ch.pipeline();
+        pipeline.addLast("codec", new NetworkPacketCodec());
+        GlobalTrafficShapingHandler handler =
+                Configuration.configuration.getGlobalTrafficShapingHandler();
+        if (handler != null) {
+            pipeline.addLast(LIMIT, handler);
+        }
+        ChannelTrafficShapingHandler trafficChannel = null;
+        try {
+            trafficChannel =
+                    Configuration.configuration
+                            .newChannelTrafficShapingHandler();
+            if (trafficChannel != null) {
+                pipeline.addLast(LIMITCHANNEL, trafficChannel);
+            }
+        } catch (OpenR66ProtocolNoDataException e) {
+        }
+        pipeline.addLast("pipelineExecutor", new ExecutionHandler(
+                Configuration.configuration.getHandlerGroup()));
 
-		pipeline.addLast(TIMEOUT,
-				new IdleStateHandler(timer,
-						0, 0,
-						Configuration.configuration.TIMEOUTCON,
-						TimeUnit.MILLISECONDS));
-		pipeline.addLast(HANDLER, new NetworkServerHandler(this.server));
-		return pipeline;
-	}
+        pipeline.addLast(TIMEOUT,
+                new IdleStateHandler(timer,
+                        0, 0,
+                        Configuration.configuration.TIMEOUTCON,
+                        TimeUnit.MILLISECONDS));
+        pipeline.addLast(HANDLER, new NetworkServerHandler(this.server));
+        return pipeline;
+    }
 
 }

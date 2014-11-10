@@ -35,90 +35,90 @@ import org.waarp.openr66.proxy.network.NetworkServerHandler;
  * 
  */
 public class NetworkSslServerHandler extends NetworkServerHandler {
-	/**
-	 * @param isServer
-	 */
-	public NetworkSslServerHandler(boolean isServer) {
-		super(isServer);
-	}
+    /**
+     * @param isServer
+     */
+    public NetworkSslServerHandler(boolean isServer) {
+        super(isServer);
+    }
 
-	/**
-	 * Internal Logger
-	 */
-	private static final WaarpLogger logger = WaarpLoggerFactory
-			.getLogger(NetworkSslServerHandler.class);
+    /**
+     * Internal Logger
+     */
+    private static final WaarpLogger logger = WaarpLoggerFactory
+            .getLogger(NetworkSslServerHandler.class);
 
-	/**
-	 * 
-	 * @param channel
-	 * @return True if the SSL handshake is over and OK, else False
-	 */
-	public static boolean isSslConnectedChannel(Channel channel) {
+    /**
+     * 
+     * @param channel
+     * @return True if the SSL handshake is over and OK, else False
+     */
+    public static boolean isSslConnectedChannel(Channel channel) {
 
-		WaarpFuture futureSSL = WaarpSslUtility.getFutureSslHandshake(channel);
-		if (futureSSL == null) {
-			int maxtry = (int) (Configuration.configuration.TIMEOUTCON / Configuration.RETRYINMS) / 2;
-			for (int i = 0; i < maxtry; i++) {
-				futureSSL = WaarpSslUtility.getFutureSslHandshake(channel);
-				if (futureSSL != null)
-					break;
-				try {
-					Thread.sleep(Configuration.RETRYINMS);
-					Thread.yield();
-				} catch (InterruptedException e) {
-				}
-			}
-		}
-		if (futureSSL == null) {
-			logger.debug("No wait For SSL found");
-			return false;
-		} else {
-			try {
-				futureSSL.await(Configuration.configuration.TIMEOUTCON);
-			} catch (InterruptedException e) {
-			}
-			if (futureSSL.isDone()) {
-				logger.debug("Wait For SSL: " + futureSSL.isSuccess());
-				return futureSSL.isSuccess();
-			}
-			logger.error("Out of time for wait For SSL");
-			return false;
-		}
-	}
+        WaarpFuture futureSSL = WaarpSslUtility.getFutureSslHandshake(channel);
+        if (futureSSL == null) {
+            int maxtry = (int) (Configuration.configuration.TIMEOUTCON / Configuration.RETRYINMS) / 2;
+            for (int i = 0; i < maxtry; i++) {
+                futureSSL = WaarpSslUtility.getFutureSslHandshake(channel);
+                if (futureSSL != null)
+                    break;
+                try {
+                    Thread.sleep(Configuration.RETRYINMS);
+                    Thread.yield();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+        if (futureSSL == null) {
+            logger.debug("No wait For SSL found");
+            return false;
+        } else {
+            try {
+                futureSSL.await(Configuration.configuration.TIMEOUTCON);
+            } catch (InterruptedException e) {
+            }
+            if (futureSSL.isDone()) {
+                logger.debug("Wait For SSL: " + futureSSL.isSuccess());
+                return futureSSL.isSuccess();
+            }
+            logger.error("Out of time for wait For SSL");
+            return false;
+        }
+    }
 
-	@Override
-	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		Channel channel = e.channel();
-		logger.debug("Add channel to ssl");
-		WaarpSslUtility.addSslOpenedChannel(channel);
-		isSSL = true;
-		super.channelOpen(ctx, e);
-	}
+    @Override
+    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
+            throws Exception {
+        Channel channel = e.channel();
+        logger.debug("Add channel to ssl");
+        WaarpSslUtility.addSslOpenedChannel(channel);
+        isSSL = true;
+        super.channelOpen(ctx, e);
+    }
 
-	@Override
-	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws OpenR66ProtocolNetworkException {
-		// Get the SslHandler in the current pipeline.
-		// We added it in NetworkSslServerInitializer.
-		final ChannelHandler handler = ctx.pipeline().first();
-		if (handler instanceof SslHandler) {
-			final SslHandler sslHandler = (SslHandler) handler;
-			if (sslHandler.isIssueHandshake()) {
-				// client side
-				WaarpSslUtility.setStatusSslConnectedChannel(ctx.channel(), true);
-			} else {
-				// server side
-				// Get the SslHandler and begin handshake ASAP.
-				// Get notified when SSL handshake is done.
-				if (!WaarpSslUtility.runHandshake(ctx.channel())) {
-					Configuration.configuration.r66Mib.notifyError(
-							"SSL Connection Error", "During Handshake");
-				}
-			}
-		} else {
-			logger.error("SSL Not found");
-		}
-		super.channelConnected(ctx, e);
-	}
+    @Override
+    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+            throws OpenR66ProtocolNetworkException {
+        // Get the SslHandler in the current pipeline.
+        // We added it in NetworkSslServerInitializer.
+        final ChannelHandler handler = ctx.pipeline().first();
+        if (handler instanceof SslHandler) {
+            final SslHandler sslHandler = (SslHandler) handler;
+            if (sslHandler.isIssueHandshake()) {
+                // client side
+                WaarpSslUtility.setStatusSslConnectedChannel(ctx.channel(), true);
+            } else {
+                // server side
+                // Get the SslHandler and begin handshake ASAP.
+                // Get notified when SSL handshake is done.
+                if (!WaarpSslUtility.runHandshake(ctx.channel())) {
+                    Configuration.configuration.r66Mib.notifyError(
+                            "SSL Connection Error", "During Handshake");
+                }
+            }
+        } else {
+            logger.error("SSL Not found");
+        }
+        super.channelConnected(ctx, e);
+    }
 }

@@ -68,330 +68,328 @@ import org.waarp.openr66.proxy.configuration.Configuration;
  * 
  */
 public class HttpFormattedHandler extends SimpleChannelInboundHandler {
-	/**
-	 * Internal Logger
-	 */
-	private static final WaarpLogger logger = WaarpLoggerFactory
-			.getLogger(HttpFormattedHandler.class);
+    /**
+     * Internal Logger
+     */
+    private static final WaarpLogger logger = WaarpLoggerFactory
+            .getLogger(HttpFormattedHandler.class);
 
-	private static enum REQUEST {
-		index("index.html"),
-		error("monitoring_header.html", "monitoring_end.html"),
-		statusxml("");
+    private static enum REQUEST {
+        index("index.html"),
+        error("monitoring_header.html", "monitoring_end.html"),
+        statusxml("");
 
-		private String header;
-		private String end;
+        private String header;
+        private String end;
 
-		/**
-		 * Constructor for a unique file
-		 * 
-		 * @param uniquefile
-		 */
-		private REQUEST(String uniquefile) {
-			this.header = uniquefile;
-			this.end = uniquefile;
-		}
+        /**
+         * Constructor for a unique file
+         * 
+         * @param uniquefile
+         */
+        private REQUEST(String uniquefile) {
+            this.header = uniquefile;
+            this.end = uniquefile;
+        }
 
-		/**
-		 * @param header
-		 * @param end
-		 */
-		private REQUEST(String header, String end) {
-			this.header = header;
-			this.end = end;
-		}
+        /**
+         * @param header
+         * @param end
+         */
+        private REQUEST(String header, String end) {
+            this.header = header;
+            this.end = end;
+        }
 
-		/**
-		 * Reader for a unique file
-		 * 
-		 * @return the content of the unique file
-		 */
-		public String readFileUnique(HttpFormattedHandler handler) {
-			return handler.readFileHeader(Configuration.configuration.httpBasePath + "monitor/"
-					+ this.header);
-		}
+        /**
+         * Reader for a unique file
+         * 
+         * @return the content of the unique file
+         */
+        public String readFileUnique(HttpFormattedHandler handler) {
+            return handler.readFileHeader(Configuration.configuration.httpBasePath + "monitor/"
+                    + this.header);
+        }
 
-		public String readHeader(HttpFormattedHandler handler) {
-			return handler.readFileHeader(Configuration.configuration.httpBasePath + "monitor/"
-					+ this.header);
-		}
+        public String readHeader(HttpFormattedHandler handler) {
+            return handler.readFileHeader(Configuration.configuration.httpBasePath + "monitor/"
+                    + this.header);
+        }
 
-		public String readEnd() {
-			return WaarpStringUtils.readFile(Configuration.configuration.httpBasePath + "monitor/"
-					+ this.end);
-		}
-	}
+        public String readEnd() {
+            return WaarpStringUtils.readFile(Configuration.configuration.httpBasePath + "monitor/"
+                    + this.end);
+        }
+    }
 
-	private static enum REPLACEMENT {
-		XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX, XXXLANGXXX;
-	}
+    private static enum REPLACEMENT {
+        XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX, XXXLANGXXX;
+    }
 
-	public static final int LIMITROW = 60; // better
-											// if
-											// it
-											// can
-											// be
-											// divided
-											// by
-											// 4
-	private static final String I18NEXT = "i18next";
+    public static final int LIMITROW = 60; // better
+                                           // if
+                                           // it
+                                           // can
+                                           // be
+                                           // divided
+                                           // by
+                                           // 4
+    private static final String I18NEXT = "i18next";
 
-	public final R66Session authentHttp = new R66Session();
+    public final R66Session authentHttp = new R66Session();
 
-	public static final ConcurrentHashMap<String, R66Dir> usedDir = new ConcurrentHashMap<String, R66Dir>();
+    public static final ConcurrentHashMap<String, R66Dir> usedDir = new ConcurrentHashMap<String, R66Dir>();
 
-	private HttpRequest request;
+    private HttpRequest request;
 
-	private final StringBuilder responseContent = new StringBuilder();
+    private final StringBuilder responseContent = new StringBuilder();
 
-	private HttpResponseStatus status;
+    private HttpResponseStatus status;
 
-	private String uriRequest;
+    private String uriRequest;
 
-	private String lang = Messages.slocale;
+    private String lang = Messages.slocale;
 
-	private boolean isCurrentRequestXml = false;
+    private boolean isCurrentRequestXml = false;
 
-	private String readFileHeader(String filename) {
-		String value;
-		try {
-			value = WaarpStringUtils.readFileException(filename);
-		} catch (InvalidArgumentException e) {
-			logger.error("Error while trying to open: " + filename, e);
-			return "";
-		} catch (FileTransferException e) {
-			logger.error("Error while trying to read: " + filename, e);
-			return "";
-		}
-		StringBuilder builder = new StringBuilder(value);
+    private String readFileHeader(String filename) {
+        String value;
+        try {
+            value = WaarpStringUtils.readFileException(filename);
+        } catch (InvalidArgumentException e) {
+            logger.error("Error while trying to open: " + filename, e);
+            return "";
+        } catch (FileTransferException e) {
+            logger.error("Error while trying to read: " + filename, e);
+            return "";
+        }
+        StringBuilder builder = new StringBuilder(value);
 
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXDATEXXX.toString(),
-				(new Date()).toString());
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCACTIVEXXX.toString(),
-				Integer.toString(
-						Configuration.configuration.getLocalTransaction().
-								getNumberLocalChannel()));
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETACTIVEXXX.toString(),
-				Integer.toString(
-						Configuration.configuration.getLocalTransaction().
-								getNumberLocalChannel()));
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-				Configuration.configuration.HOST_ID);
-		TrafficCounter trafficCounter =
-				Configuration.configuration.getGlobalTrafficShapingHandler().getTrafficCounter();
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
-				"IN:" + (trafficCounter.getLastReadThroughput() / 131072) +
-						"Mbits&nbsp;&nbsp;OUT:" +
-						(trafficCounter.getLastWriteThroughput() / 131072) + "Mbits");
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
-		return builder.toString();
-	}
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXDATEXXX.toString(),
+                (new Date()).toString());
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCACTIVEXXX.toString(),
+                Integer.toString(
+                        Configuration.configuration.getLocalTransaction().
+                                getNumberLocalChannel()));
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETACTIVEXXX.toString(),
+                Integer.toString(
+                        Configuration.configuration.getLocalTransaction().
+                                getNumberLocalChannel()));
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
+                Configuration.configuration.HOST_ID);
+        TrafficCounter trafficCounter =
+                Configuration.configuration.getGlobalTrafficShapingHandler().getTrafficCounter();
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
+                "IN:" + (trafficCounter.getLastReadThroughput() / 131072) +
+                        "Mbits&nbsp;&nbsp;OUT:" +
+                        (trafficCounter.getLastWriteThroughput() / 131072) + "Mbits");
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
+        return builder.toString();
+    }
 
-	@Override
-	public void channelRead(ChannelHandlerContext ctx, MessageEvent e)
-			throws Exception {
-		isCurrentRequestXml = false;
-		status = HttpResponseStatus.OK;
-		HttpRequest request = this.request = (HttpRequest) e.getMessage();
-		QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request
-				.getUri());
-		uriRequest = queryStringDecoder.getPath();
-		logger.debug("Msg: " + uriRequest);
-		if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
-				uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
-			HttpWriteCacheEnable.writeFile(request,
-					e.channel(), Configuration.configuration.httpBasePath + uriRequest,
-					"XYZR66NOSESSION");
-			return;
-		}
-		char cval = 'z';
-		long nb = LIMITROW;
-		// check the URI
-		if (uriRequest.equalsIgnoreCase("/statusxml")) {
-			cval = '5';
-			nb = 0; // since it could be the default or setup by request
-			isCurrentRequestXml = true;
-		}
-		if (request.getMethod() == HttpMethod.GET) {
-			Map<String, List<String>> params = queryStringDecoder.getParameters();
-			String value = null;
-			try {
-				value = params.get("setLng").get(0).trim();
-			} catch (NullPointerException e1) {
-				value = null;
-			}
-			if (value != null && ! value.isEmpty()) {
-				lang = value;
-			}
-		}
-		boolean getMenu = (cval == 'z');
-		boolean extraBoolean = false;
-		if (getMenu) {
-			responseContent.append(REQUEST.index.readFileUnique(this));
-		} else {
-			// Use value 0=Active 1=Error 2=Done 3=All
-			switch (cval) {
-				case '5':
-					statusxml(ctx, nb, extraBoolean);
-					break;
-				default:
-					responseContent.append(REQUEST.index.readFileUnique(this));
-			}
-		}
-		writeResponse(e);
-	}
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, MessageEvent e)
+            throws Exception {
+        isCurrentRequestXml = false;
+        status = HttpResponseStatus.OK;
+        HttpRequest request = this.request = (HttpRequest) e.getMessage();
+        QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request
+                .getUri());
+        uriRequest = queryStringDecoder.getPath();
+        logger.debug("Msg: " + uriRequest);
+        if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
+                uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
+            HttpWriteCacheEnable.writeFile(request,
+                    e.channel(), Configuration.configuration.httpBasePath + uriRequest,
+                    "XYZR66NOSESSION");
+            return;
+        }
+        char cval = 'z';
+        long nb = LIMITROW;
+        // check the URI
+        if (uriRequest.equalsIgnoreCase("/statusxml")) {
+            cval = '5';
+            nb = 0; // since it could be the default or setup by request
+            isCurrentRequestXml = true;
+        }
+        if (request.getMethod() == HttpMethod.GET) {
+            Map<String, List<String>> params = queryStringDecoder.getParameters();
+            String value = null;
+            try {
+                value = params.get("setLng").get(0).trim();
+            } catch (NullPointerException e1) {
+                value = null;
+            }
+            if (value != null && !value.isEmpty()) {
+                lang = value;
+            }
+        }
+        boolean getMenu = (cval == 'z');
+        boolean extraBoolean = false;
+        if (getMenu) {
+            responseContent.append(REQUEST.index.readFileUnique(this));
+        } else {
+            // Use value 0=Active 1=Error 2=Done 3=All
+            switch (cval) {
+                case '5':
+                    statusxml(ctx, nb, extraBoolean);
+                    break;
+                default:
+                    responseContent.append(REQUEST.index.readFileUnique(this));
+            }
+        }
+        writeResponse(e);
+    }
 
-	/**
-	 * print only status
-	 * 
-	 * @param ctx
-	 * @param nb
-	 */
-	private void statusxml(ChannelHandlerContext ctx, long nb, boolean detail) {
-		Configuration.configuration.monitoring.run(nb, detail);
-		responseContent.append(Configuration.configuration.monitoring.exportXml(detail));
-	}
+    /**
+     * print only status
+     * 
+     * @param ctx
+     * @param nb
+     */
+    private void statusxml(ChannelHandlerContext ctx, long nb, boolean detail) {
+        Configuration.configuration.monitoring.run(nb, detail);
+        responseContent.append(Configuration.configuration.monitoring.exportXml(detail));
+    }
 
-	/**
-	 * Write the response
-	 * 
-	 * @param e
-	 */
-	private void writeResponse(MessageEvent e) {
-		// Convert the response content to a ByteBuf.
-		ByteBuf buf = Unpooled.copiedBuffer(responseContent
-				.toString(), WaarpStringUtils.UTF8);
-		responseContent.setLength(0);
-		// Decide whether to close the connection or not.
-		boolean keepAlive = HttpHeaders.isKeepAlive(request);
-		boolean close = HttpHeaders.Values.CLOSE.equalsIgnoreCase(request
-				.headers().get(HttpHeaders.Names.CONNECTION)) ||
-				(!keepAlive);
+    /**
+     * Write the response
+     * 
+     * @param e
+     */
+    private void writeResponse(MessageEvent e) {
+        // Convert the response content to a ByteBuf.
+        ByteBuf buf = Unpooled.copiedBuffer(responseContent
+                .toString(), WaarpStringUtils.UTF8);
+        responseContent.setLength(0);
+        // Decide whether to close the connection or not.
+        boolean keepAlive = HttpHeaders.isKeepAlive(request);
+        boolean close = HttpHeaders.Values.CLOSE.equalsIgnoreCase(request
+                .headers().get(HttpHeaders.Names.CONNECTION)) ||
+                (!keepAlive);
 
-		// Build the response object.
-		HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-				status);
-		response.setContent(buf);
-		if (isCurrentRequestXml) {
-			response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/xml");
-		} else {
-			response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html");
-		}
-		if (keepAlive) {
-			response.headers().set(HttpHeaders.Names.CONNECTION,
-					HttpHeaders.Values.KEEP_ALIVE);
-		}
-		if (!close) {
-			// There's no need to add 'Content-Length' header
-			// if this is the last response.
-			response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, String
-					.valueOf(buf.readableBytes()));
-		}
+        // Build the response object.
+        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
+                status);
+        response.setContent(buf);
+        if (isCurrentRequestXml) {
+            response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/xml");
+        } else {
+            response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html");
+        }
+        if (keepAlive) {
+            response.headers().set(HttpHeaders.Names.CONNECTION,
+                    HttpHeaders.Values.KEEP_ALIVE);
+        }
+        if (!close) {
+            // There's no need to add 'Content-Length' header
+            // if this is the last response.
+            response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, String
+                    .valueOf(buf.readableBytes()));
+        }
 
-		String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
-		if (cookieString != null) {
-			CookieDecoder cookieDecoder = new CookieDecoder();
-			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-			boolean i18nextFound = false;
-			if (!cookies.isEmpty()) {
-				// Reset the cookies if necessary.
-				CookieEncoder cookieEncoder = new CookieEncoder(true);
-				for (Cookie cookie : cookies) {
-					if (cookie.getName().equalsIgnoreCase(I18NEXT)) {
-						i18nextFound = true;
-						cookie.setValue(lang);
-						cookieEncoder.addCookie(cookie);
-						response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-						cookieEncoder = new CookieEncoder(true);
-					} else {
-						cookieEncoder.addCookie(cookie);
-						response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-						cookieEncoder = new CookieEncoder(true);
-					}
-				}
-				if (! i18nextFound) {
-					Cookie cookie = new DefaultCookie(I18NEXT, lang);
-					cookieEncoder.addCookie(cookie);
-					response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-				}
-			}
-			if (! i18nextFound) {
-				Cookie cookie = new DefaultCookie(I18NEXT, lang);
-				CookieEncoder cookieEncoder = new CookieEncoder(true);
-				cookieEncoder.addCookie(cookie);
-				response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-			}
-		}
+        String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
+        if (cookieString != null) {
+            CookieDecoder cookieDecoder = new CookieDecoder();
+            Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+            boolean i18nextFound = false;
+            if (!cookies.isEmpty()) {
+                // Reset the cookies if necessary.
+                CookieEncoder cookieEncoder = new CookieEncoder(true);
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equalsIgnoreCase(I18NEXT)) {
+                        i18nextFound = true;
+                        cookie.setValue(lang);
+                        cookieEncoder.addCookie(cookie);
+                        response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                        cookieEncoder = new CookieEncoder(true);
+                    } else {
+                        cookieEncoder.addCookie(cookie);
+                        response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                        cookieEncoder = new CookieEncoder(true);
+                    }
+                }
+                if (!i18nextFound) {
+                    Cookie cookie = new DefaultCookie(I18NEXT, lang);
+                    cookieEncoder.addCookie(cookie);
+                    response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                }
+            }
+            if (!i18nextFound) {
+                Cookie cookie = new DefaultCookie(I18NEXT, lang);
+                CookieEncoder cookieEncoder = new CookieEncoder(true);
+                cookieEncoder.addCookie(cookie);
+                response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+            }
+        }
 
-		// Write the response.
-		ChannelFuture future = e.channel().writeAndFlush(response);
+        // Write the response.
+        ChannelFuture future = e.channel().writeAndFlush(response);
 
-		// Close the connection after the write operation is done if necessary.
-		if (close) {
-			future.addListener(ChannelFutureListener.CLOSE);
-		}
-	}
+        // Close the connection after the write operation is done if necessary.
+        if (close) {
+            future.addListener(ChannelFutureListener.CLOSE);
+        }
+    }
 
-	/**
-	 * Send an error and close
-	 * 
-	 * @param ctx
-	 * @param status
-	 */
-	private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
-		HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
-				status);
-		response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html");
-		responseContent.setLength(0);
-		responseContent.append(REQUEST.error.readHeader(this));
-		responseContent.append("OpenR66 Web Failure: ");
-		responseContent.append(status.toString());
-		responseContent.append(REQUEST.error.readEnd());
-		response.setContent(Unpooled.copiedBuffer(responseContent
-				.toString(), WaarpStringUtils.UTF8));
-		// Close the connection as soon as the error message is sent.
-		ctx.channel().writeAndFlush(response).addListener(
-				ChannelFutureListener.CLOSE);
-	}
+    /**
+     * Send an error and close
+     * 
+     * @param ctx
+     * @param status
+     */
+    private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1,
+                status);
+        response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html");
+        responseContent.setLength(0);
+        responseContent.append(REQUEST.error.readHeader(this)).append("OpenR66 Web Failure: ")
+                .append(status.toString()).append(REQUEST.error.readEnd());
+        response.setContent(Unpooled.copiedBuffer(responseContent
+                .toString(), WaarpStringUtils.UTF8));
+        // Close the connection as soon as the error message is sent.
+        ctx.channel().writeAndFlush(response).addListener(
+                ChannelFutureListener.CLOSE);
+    }
 
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
-			throws Exception {
-		OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-				.getExceptionFromTrappedException(e.channel(), e);
-		if (exception != null) {
-			if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
-				if (e.getCause() instanceof IOException) {
-					// Nothing to do
-					return;
-				}
-				logger.warn("Exception in HttpHandler {}", exception.getMessage());
-			}
-			if (e.channel().isActive()) {
-				sendError(ctx, HttpResponseStatus.BAD_REQUEST);
-			}
-		} else {
-			// Nothing to do
-			return;
-		}
-	}
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)
+            throws Exception {
+        OpenR66Exception exception = OpenR66ExceptionTrappedFactory
+                .getExceptionFromTrappedException(e.channel(), e);
+        if (exception != null) {
+            if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
+                if (e.getCause() instanceof IOException) {
+                    // Nothing to do
+                    return;
+                }
+                logger.warn("Exception in HttpHandler {}", exception.getMessage());
+            }
+            if (e.channel().isActive()) {
+                sendError(ctx, HttpResponseStatus.BAD_REQUEST);
+            }
+        } else {
+            // Nothing to do
+            return;
+        }
+    }
 
-	@Override
-	public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		logger.debug("Closed");
-		super.channelClosed(ctx, e);
-	}
+    @Override
+    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e)
+            throws Exception {
+        logger.debug("Closed");
+        super.channelClosed(ctx, e);
+    }
 
-	@Override
-	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		logger.debug("Connected");
-		authentHttp.getAuth().specialNoSessionAuth(false, Configuration.configuration.HOST_ID);
-		super.channelConnected(ctx, e);
-		ChannelGroup group = Configuration.configuration.getHttpChannelGroup();
-		if (group != null) {
-			group.add(e.channel());
-		}
-	}
+    @Override
+    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+            throws Exception {
+        logger.debug("Connected");
+        authentHttp.getAuth().specialNoSessionAuth(false, Configuration.configuration.HOST_ID);
+        super.channelConnected(ctx, e);
+        ChannelGroup group = Configuration.configuration.getHttpChannelGroup();
+        if (group != null) {
+            group.add(e.channel());
+        }
+    }
 }
