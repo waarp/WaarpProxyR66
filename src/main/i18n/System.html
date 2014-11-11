@@ -102,7 +102,7 @@ a img {
     <input type="submit" value="Language" name="ACTION">
     <img id="langchelp" alt="help for Lang"  class="help" width="16" height="16" src="img/help_small.gif" />
 	<div id="containerlangchelp"><p data-i18n="menu5.text15" class="cshelp">
-	You can choose between available languages. You can change only the web interface or all the server language support.
+	You can choose between available languages. You can change only the web interface or all the server language support. Note: IE might not work except in compatibility mode.
 	</p></div></td></tr></table>
   </form>
 						<form method="post" name="SYSTEM" action="/System.html">
@@ -176,6 +176,19 @@ a img {
 	will be stopped in pause), following by a full restart of the server (processus). Useful for take into account 
 	new jar versions in production.
 	</p></div>
+  </form>
+<p>&nbsp;</p>
+  <form method="post" name="SYSTEM" action="/System.html">
+    <label data-i18n="menu5.text16">Change Logging Level in OpenR66 Server</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <input type="radio" name="loglevel" value="DEBUG" XXXLEVEL1XXX><label data-i18n="menu5.text17">DEBUG</label>&nbsp;&nbsp;
+    <input type="radio" name="loglevel" value="INFO" XXXLEVEL2XXX><label data-i18n="menu5.text18">INFO</label>&nbsp;&nbsp;
+    <input type="radio" name="loglevel" value="WARN" XXXLEVEL3XXX><label data-i18n="menu5.text19">WARN</label>&nbsp;&nbsp;
+    <input type="radio" name="loglevel" value="ERROR" XXXLEVEL4XXX><label data-i18n="menu5.text20">ERROR</label>&nbsp;&nbsp;
+    <input type="submit" value="Level" name="ACTION">
+    <img id="levelchelp" alt="help for Log"  class="help" width="16" height="16" src="img/help_small.gif" />
+        <div id="containerlevelchelp"><p data-i18n="menu5.text21" class="cshelp">
+        You can change dynamically the Logging level of the program from here (in addition to being able to fixing it in configuration file).
+        </p></div>
   </form>
 					</div>
 <p>&nbsp;</p></div></td></tr></tbody></table>

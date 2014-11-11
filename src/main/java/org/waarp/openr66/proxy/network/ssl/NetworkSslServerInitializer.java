@@ -78,7 +78,8 @@ public class NetworkSslServerInitializer extends
             pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel);
         } catch (OpenR66ProtocolNoDataException e) {
         }
-        pipeline.addLast(NetworkServerInitializer.HANDLER, new NetworkSslServerHandler(
+        pipeline.addLast(Configuration.configuration.getHandlerGroup(),
+                NetworkServerInitializer.HANDLER, new NetworkSslServerHandler(
                 !this.isClient));
     }
 }
