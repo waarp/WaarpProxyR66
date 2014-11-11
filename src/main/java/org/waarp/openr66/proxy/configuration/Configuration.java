@@ -18,18 +18,17 @@
 package org.waarp.openr66.proxy.configuration;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannelFactory;
-import io.netty.handler.execution.OrderedMemoryAwareThreadPoolExecutor;
+
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.WaarpThreadFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
+import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.networkhandler.GlobalTrafficHandler;
-import org.waarp.openr66.protocol.networkhandler.packet.NetworkPacketSizeEstimator;
 import org.waarp.openr66.protocol.utils.R66ShutdownHook;
 import org.waarp.openr66.proxy.network.LocalTransaction;
 import org.waarp.openr66.proxy.network.NetworkServerInitializer;
@@ -70,16 +69,10 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
         if (configured) {
             return;
         }
-        WaarpLoggerFactory.setDefaultFactory(WaarpLoggerFactory
-                .getDefaultFactory());
-        objectSizeEstimator = new NetworkPacketSizeEstimator();
+        WaarpLoggerFactory.setDefaultFactory(WaarpLoggerFactory.getDefaultFactory());
         httpPipelineInit();
         logger.warn("Server Thread: " + SERVER_THREAD + " Client Thread: " + CLIENT_THREAD
                 + " Runner Thread: " + RUNNER_THREAD);
-        serverPipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
-                CLIENT_THREAD, maxGlobalMemory / 10, maxGlobalMemory, 1000,
-                TimeUnit.MILLISECONDS, objectSizeEstimator,
-                new WaarpThreadFactory("ServerExecutor"));
         configured = true;
     }
 
@@ -99,6 +92,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
             startMonitoring();
         } catch (WaarpDatabaseSqlException e) {
         }
+        logger.warn(this.toString());
     }
 
     @Override
@@ -108,58 +102,56 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
         // add into configuration
         this.constraintLimitHandler.setServer(true);
         // Global Server
-        serverChannelGroup = new DefaultChannelGroup("OpenR66");
-
-        serverChannelFactory = new NioServerSocketChannelFactory(
-                execServerBoss, execServerWorker, SERVER_THREAD);
+        serverChannelGroup = new DefaultChannelGroup("OpenR66", subTaskGroup.next());
         if (useNOSSL) {
-            serverBootstrap = new ServerBootstrap(serverChannelFactory);
+            serverBootstrap = new ServerBootstrap();
+            WaarpNettyUtil.setServerBootstrap(serverBootstrap, bossGroup, workerGroup, (int) TIMEOUTCON);
             networkServerInitializer = new NetworkServerInitializer(true);
-            serverBootstrap.setInitializer(networkServerInitializer);
-            serverBootstrap.setOption("child.tcpNoDelay", true);
-            serverBootstrap.setOption("child.keepAlive", true);
-            serverBootstrap.setOption("child.reuseAddress", true);
-            serverBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
-            serverBootstrap.setOption("tcpNoDelay", true);
-            serverBootstrap.setOption("reuseAddress", true);
-            serverBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
+            serverBootstrap.childHandler(networkServerInitializer);
             // FIXME take into account multiple address
             for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
                 if (!entry.isLocalSsl()) {
-                    serverChannelGroup.add(serverBootstrap.bind(entry.getLocalSocketAddress()));
+                    ChannelFuture future = serverBootstrap.bind(entry.getLocalSocketAddress()).awaitUninterruptibly();
+                    if (future.isSuccess()) {
+                        bindNoSSL = future.channel();
+                        serverChannelGroup.add(bindNoSSL);
+                    } else {
+                        logger.warn(Messages.getString("Configuration.NOSSLDeactivated") +
+                                " for " + entry.getLocalSocketAddress()); //$NON-NLS-1$
+                    }
                 }
             }
         } else {
             networkServerInitializer = null;
-            logger.warn("NOSSL mode is deactivated");
+            logger.warn(Messages.getString("Configuration.NOSSLDeactivated")); //$NON-NLS-1$
         }
 
         if (useSSL && HOST_SSLID != null) {
-            serverSslBootstrap = new ServerBootstrap(serverChannelFactory);
+            serverSslBootstrap = new ServerBootstrap();
+            WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, bossGroup, workerGroup, (int) TIMEOUTCON);
             networkSslServerInitializer = new NetworkSslServerInitializer(false);
-            serverSslBootstrap.setInitializer(networkSslServerInitializer);
-            serverSslBootstrap.setOption("child.tcpNoDelay", true);
-            serverSslBootstrap.setOption("child.keepAlive", true);
-            serverSslBootstrap.setOption("child.reuseAddress", true);
-            serverSslBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
-            serverSslBootstrap.setOption("tcpNoDelay", true);
-            serverSslBootstrap.setOption("reuseAddress", true);
-            serverSslBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
+            serverSslBootstrap.childHandler(networkSslServerInitializer);
             // FIXME take into account multiple address
             for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
                 if (entry.isLocalSsl()) {
-                    serverChannelGroup.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));
+                    ChannelFuture future = serverSslBootstrap.bind(entry.getLocalSocketAddress()).awaitUninterruptibly();
+                    if (future.isSuccess()) {
+                        bindSSL = future.channel();
+                        serverChannelGroup.add(bindSSL);
+                    } else {
+                        logger.warn(Messages.getString("Configuration.SSLMODEDeactivated") +
+                                " for " + entry.getLocalSocketAddress()); //$NON-NLS-1$
+                    }
                 }
             }
         } else {
             networkSslServerInitializer = null;
-            logger.warn("SSL mode is desactivated");
+            logger.warn(Messages.getString("Configuration.SSLMODEDeactivated")); //$NON-NLS-1$
         }
 
         // Factory for TrafficShapingHandler
-        globalTrafficShapingHandler = new GlobalTrafficHandler(
-                objectSizeEstimator, timerTrafficCounter,
-                serverGlobalWriteLimit, serverGlobalReadLimit, delayLimit);
+        globalTrafficShapingHandler = new GlobalTrafficHandler(subTaskGroup, serverGlobalWriteLimit,
+                serverGlobalReadLimit, delayLimit);
         this.constraintLimitHandler.setHandler(globalTrafficShapingHandler);
         ProxyBridge.initialize();
         localTransaction = new LocalTransaction();
@@ -169,46 +161,34 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
     @Override
     public void startHttpSupport() {
         // Now start the HTTP support
-        httpChannelGroup = new DefaultChannelGroup("HttpOpenR66");
+        logger.info(Messages.getString("Configuration.HTTPStart") + SERVER_HTTPPORT + //$NON-NLS-1$
+                " HTTPS: " + SERVER_HTTPSPORT);
+        httpChannelGroup = new DefaultChannelGroup("HttpOpenR66", subTaskGroup.next());
         // Configure the server.
-        httpChannelFactory = new NioServerSocketChannelFactory(
-                execServerBoss,
-                execServerWorker,
-                SERVER_THREAD);
-        httpBootstrap = new ServerBootstrap(
-                httpChannelFactory);
+        httpBootstrap = new ServerBootstrap();
+        WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpBossGroup, httpWorkerGroup, (int) TIMEOUTCON);
         // Set up the event pipeline factory.
-        httpBootstrap.setInitializer(new HttpInitializer(useHttpCompression));
-        httpBootstrap.setOption("child.tcpNoDelay", true);
-        httpBootstrap.setOption("child.keepAlive", true);
-        httpBootstrap.setOption("child.reuseAddress", true);
-        httpBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
-        httpBootstrap.setOption("tcpNoDelay", true);
-        httpBootstrap.setOption("reuseAddress", true);
-        httpBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
+        httpBootstrap.childHandler(new HttpInitializer(useHttpCompression));
         // Bind and start to accept incoming connections.
-        httpChannelGroup.add(httpBootstrap.bind(new InetSocketAddress(SERVER_HTTPPORT)));
-
+        if (SERVER_HTTPPORT > 0) {
+            ChannelFuture future = httpBootstrap.bind(new InetSocketAddress(SERVER_HTTPPORT)).awaitUninterruptibly();
+            if (future.isSuccess()) {
+                httpChannelGroup.add(future.channel());
+            }
+        }
         // Now start the HTTPS support
         // Configure the server.
-        httpsChannelFactory = new NioServerSocketChannelFactory(
-                execServerBoss,
-                execServerWorker,
-                SERVER_THREAD);
-        httpsBootstrap = new ServerBootstrap(
-                httpsChannelFactory);
+        httpsBootstrap = new ServerBootstrap();
         // Set up the event pipeline factory.
-        httpsBootstrap.setInitializer(new HttpSslInitializer(useHttpCompression,
-                false));
-        httpsBootstrap.setOption("child.tcpNoDelay", true);
-        httpsBootstrap.setOption("child.keepAlive", true);
-        httpsBootstrap.setOption("child.reuseAddress", true);
-        httpsBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
-        httpsBootstrap.setOption("tcpNoDelay", true);
-        httpsBootstrap.setOption("reuseAddress", true);
-        httpsBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
+        WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpBossGroup, httpWorkerGroup, (int) TIMEOUTCON);
+        httpsBootstrap.childHandler(new HttpSslInitializer(useHttpCompression, false));
         // Bind and start to accept incoming connections.
-        httpChannelGroup.add(httpsBootstrap.bind(new InetSocketAddress(SERVER_HTTPSPORT)));
+        if (SERVER_HTTPSPORT > 0) {
+            ChannelFuture future = httpsBootstrap.bind(new InetSocketAddress(SERVER_HTTPSPORT)).awaitUninterruptibly();
+            if (future.isSuccess()) {
+                httpChannelGroup.add(future.channel());
+            }
+        }
     }
 
     @Override

@@ -20,14 +20,14 @@ package org.waarp.openr66.proxy.network.ssl;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.Channels;
-import io.netty.handler.execution.ExecutionHandler;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
-import org.waarp.openr66.protocol.configuration.Configuration;
+
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
+import org.waarp.openr66.proxy.configuration.Configuration;
 import org.waarp.openr66.proxy.network.NetworkPacketCodec;
 import org.waarp.openr66.proxy.network.NetworkServerInitializer;
 
@@ -46,26 +46,25 @@ public class NetworkSslServerInitializer extends
         super(isClient);
     }
 
-    protected void initChannel(Channel ch) {
+    protected void initChannel(SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
         // Add SSL handler first to encrypt and decrypt everything.
         SslHandler sslHandler = null;
         if (isClient) {
             // Not server: no clientAuthent, no renegotiation
             sslHandler =
-                    waarpSslContextFactory.initInitializer(false,
-                            false, false);
-            sslHandler.setIssueHandshake(true);
+                    waarpSslContextFactory.initInitializer(false, false);
         } else {
             // Server: no renegotiation still, but possible clientAuthent
             sslHandler =
                     waarpSslContextFactory.initInitializer(true,
-                            waarpSslContextFactory.needClientAuthentication(),
-                            true);
+                            waarpSslContextFactory.needClientAuthentication());
         }
         pipeline.addLast("ssl", sslHandler);
 
         pipeline.addLast("codec", new NetworkPacketCodec());
+        pipeline.addLast(NetworkServerInitializer.TIMEOUT,
+                new IdleStateHandler(0, 0, Configuration.configuration.TIMEOUTCON, TimeUnit.MILLISECONDS));
         GlobalTrafficShapingHandler handler = Configuration.configuration
                 .getGlobalTrafficShapingHandler();
         if (handler != null) {
@@ -79,16 +78,7 @@ public class NetworkSslServerInitializer extends
             pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel);
         } catch (OpenR66ProtocolNoDataException e) {
         }
-        pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-                Configuration.configuration.getHandlerGroup()));
-
-        pipeline.addLast(NetworkServerInitializer.TIMEOUT,
-                new IdleStateHandler(timer,
-                        0, 0,
-                        Configuration.configuration.TIMEOUTCON,
-                        TimeUnit.MILLISECONDS));
         pipeline.addLast(NetworkServerInitializer.HANDLER, new NetworkSslServerHandler(
                 !this.isClient));
-        return pipeline;
     }
 }

@@ -19,22 +19,18 @@ package org.waarp.openr66.proxy.network;
 
 import java.net.ConnectException;
 import java.net.SocketAddress;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFactory;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelPipelineException;
-import io.netty.channel.Channels;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.channel.socket.nio.NioClientSocketChannelFactory;
+
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
-import org.waarp.common.utility.WaarpThreadFactory;
+import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.exception.OpenR66Exception;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNetworkException;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoConnectionException;
@@ -54,52 +50,32 @@ public class NetworkTransaction {
     /**
      * Internal Logger
      */
-    private static final WaarpLogger logger = WaarpLoggerFactory
-            .getLogger(NetworkTransaction.class);
+    private static final WaarpLogger logger = WaarpLoggerFactory.getLogger(NetworkTransaction.class);
 
-    /**
-     * ExecutorService Server Boss
-     */
-    private final ExecutorService execServerBoss = Executors
-            .newCachedThreadPool(new WaarpThreadFactory("ServerBossProxy"));
-    /**
-     * ExecutorService Server Worker
-     */
-    private final ExecutorService execServerWorker = Executors
-            .newCachedThreadPool(new WaarpThreadFactory("ServerWorkerProxy"));
-
-    private final ChannelFactory channelClientFactory = new NioClientSocketChannelFactory(
-            execServerBoss,
-            execServerWorker,
-            Configuration.configuration.CLIENT_THREAD);
-
-    private final Bootstrap Bootstrap = new Bootstrap(
-            channelClientFactory);
-    private final Bootstrap clientSslBootstrap = new Bootstrap(
-            channelClientFactory);
-    private final ChannelGroup networkChannelGroup = new DefaultChannelGroup(
-            "NetworkChannels");
-    private final NetworkServerInitializer networkServerInitializer;
-    private final NetworkSslServerInitializer networkSslServerInitializer;
+    private final Bootstrap clientBootstrap;
+    private final Bootstrap clientSslBootstrap;
+    private final ChannelGroup networkChannelGroup;
 
     public NetworkTransaction() {
-        networkServerInitializer = new NetworkServerInitializer(false);
-        Bootstrap.setInitializer(networkServerInitializer);
-        Bootstrap.setOption("tcpNoDelay", true);
-        Bootstrap.setOption("reuseAddress", true);
-        Bootstrap.setOption("connectTimeoutMillis",
-                Configuration.configuration.TIMEOUTCON);
+        networkChannelGroup = new DefaultChannelGroup("NetworkChannels", Configuration.configuration.getSubTaskGroup()
+                .next());
+        NetworkServerInitializer networkServerInitializer = new NetworkServerInitializer(false);
+        clientBootstrap = new Bootstrap();
+        WaarpNettyUtil.setBootstrap(clientBootstrap, Configuration.configuration.getNetworkWorkerGroup(),
+                (int) Configuration.configuration.TIMEOUTCON);
+        clientBootstrap.handler(networkServerInitializer);
+        clientSslBootstrap = new Bootstrap();
         if (Configuration.configuration.useSSL && Configuration.configuration.HOST_SSLID != null) {
-            networkSslServerInitializer =
-                    new NetworkSslServerInitializer(true);
-            clientSslBootstrap.setInitializer(networkSslServerInitializer);
-            clientSslBootstrap.setOption("tcpNoDelay", true);
-            clientSslBootstrap.setOption("reuseAddress", true);
-            clientSslBootstrap.setOption("connectTimeoutMillis",
-                    Configuration.configuration.TIMEOUTCON);
+            NetworkSslServerInitializer networkSslServerInitializer = new NetworkSslServerInitializer(true);
+            WaarpNettyUtil.setBootstrap(clientSslBootstrap, Configuration.configuration.getNetworkWorkerGroup(),
+                    (int) Configuration.configuration.TIMEOUTCON);
+            clientSslBootstrap.handler(networkSslServerInitializer);
         } else {
-            networkSslServerInitializer = null;
-            logger.warn("No SSL support configured");
+            if (Configuration.configuration.warnOnStartup) {
+                logger.warn("No SSL support configured");
+            } else {
+                logger.info("No SSL support configured");
+            }
         }
     }
 
@@ -217,7 +193,7 @@ public class NetworkTransaction {
                         throw new OpenR66ProtocolNoConnectionException("No SSL support");
                     }
                 } else {
-                    channelFuture = Bootstrap.connect(socketServerAddress);
+                    channelFuture = clientBootstrap.connect(socketServerAddress);
                 }
             } catch (ChannelPipelineException e) {
                 throw new OpenR66ProtocolNoConnectionException(
@@ -232,7 +208,7 @@ public class NetworkTransaction {
                 if (isSSL) {
                     if (!NetworkSslServerHandler.isSslConnectedChannel(channel)) {
                         logger.debug("KO CONNECT since SSL handshake is over");
-                        Channels.close(channel);
+                        channel.close();
                         throw new OpenR66ProtocolNoConnectionException(
                                 "Cannot finish connect to remote server");
                     }
@@ -248,20 +224,20 @@ public class NetworkTransaction {
                     throw new OpenR66ProtocolNoConnectionException(
                             "Cannot connect to remote server due to interruption");
                 }
-                if (channelFuture.getCause() instanceof ConnectException) {
+                if (channelFuture.cause() instanceof ConnectException) {
                     logger.debug("KO CONNECT:" +
-                            channelFuture.getCause().getMessage());
+                            channelFuture.cause().getMessage());
                     throw new OpenR66ProtocolNoConnectionException(
                             "Cannot connect to remote server", channelFuture
-                                    .getCause());
+                                    .cause());
                 } else {
                     logger.debug("KO CONNECT but retry", channelFuture
-                            .getCause());
+                            .cause());
                 }
             }
         }
         throw new OpenR66ProtocolNetworkException(
-                "Cannot connect to remote server", channelFuture.getCause());
+                "Cannot connect to remote server", channelFuture.cause());
     }
 
     /**
@@ -280,9 +256,6 @@ public class NetworkTransaction {
             WaarpSslUtility.closingSslChannel(channel);
         }
         networkChannelGroup.close().awaitUninterruptibly();
-        Bootstrap.releaseExternalResources();
-        clientSslBootstrap.releaseExternalResources();
-        channelClientFactory.releaseExternalResources();
         try {
             Thread.sleep(Configuration.WAITFORNETOP);
         } catch (InterruptedException e) {

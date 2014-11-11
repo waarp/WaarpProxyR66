@@ -20,13 +20,13 @@ package org.waarp.openr66.proxy.network;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.Channels;
-import io.netty.handler.execution.ExecutionHandler;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
-import org.waarp.openr66.protocol.configuration.Configuration;
+
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
+import org.waarp.openr66.proxy.configuration.Configuration;
 
 /**
  * NetworkServer pipeline (Requester side)
@@ -41,9 +41,11 @@ public class NetworkServerInitializer extends
         super(server);
     }
 
-    protected void initChannel(Channel ch) {
+    protected void initChannel(SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast("codec", new NetworkPacketCodec());
+        pipeline.addLast(TIMEOUT, new IdleStateHandler(0, 0, Configuration.configuration.TIMEOUTCON,
+                TimeUnit.MILLISECONDS));
         GlobalTrafficShapingHandler handler =
                 Configuration.configuration.getGlobalTrafficShapingHandler();
         if (handler != null) {
@@ -59,16 +61,8 @@ public class NetworkServerInitializer extends
             }
         } catch (OpenR66ProtocolNoDataException e) {
         }
-        pipeline.addLast("pipelineExecutor", new ExecutionHandler(
-                Configuration.configuration.getHandlerGroup()));
-
-        pipeline.addLast(TIMEOUT,
-                new IdleStateHandler(timer,
-                        0, 0,
-                        Configuration.configuration.TIMEOUTCON,
-                        TimeUnit.MILLISECONDS));
-        pipeline.addLast(HANDLER, new NetworkServerHandler(this.server));
-        return pipeline;
+        pipeline.addLast(Configuration.configuration.getHandlerGroup(), 
+                HANDLER, new NetworkServerHandler(this.server));
     }
 
 }
