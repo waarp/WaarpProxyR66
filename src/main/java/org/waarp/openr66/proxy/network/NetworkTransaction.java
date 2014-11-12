@@ -200,7 +200,7 @@ public class NetworkTransaction {
                         "Cannot connect to remote server due to a channel exception");
             }
             try {
-                channelFuture.await();
+                channelFuture.await(Configuration.configuration.TIMEOUTCON/3);
             } catch (InterruptedException e1) {
             }
             if (channelFuture.isSuccess()) {
