@@ -61,7 +61,7 @@ public class NetworkServerInitializer extends
             }
         } catch (OpenR66ProtocolNoDataException e) {
         }
-        pipeline.addLast(Configuration.configuration.getHandlerGroup(), 
+        pipeline.addLast(Configuration.configuration.getHandlerGroup(),
                 HANDLER, new NetworkServerHandler(this.server));
     }
 
