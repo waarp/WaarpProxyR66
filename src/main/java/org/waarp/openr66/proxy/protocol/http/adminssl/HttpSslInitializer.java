@@ -17,7 +17,6 @@
  */
 package org.waarp.openr66.proxy.protocol.http.adminssl;
 
-
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
@@ -34,14 +33,14 @@ import org.waarp.openr66.proxy.configuration.Configuration;
  * 
  */
 public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
-	public boolean useHttpCompression = false;
-	public boolean enableRenegotiation = false;
+    public boolean useHttpCompression = false;
+    public boolean enableRenegotiation = false;
 
-	public HttpSslInitializer(boolean useHttpCompression,
-			boolean enableRenegotiation) {
-		this.useHttpCompression = useHttpCompression;
-		this.enableRenegotiation = enableRenegotiation;
-	}
+    public HttpSslInitializer(boolean useHttpCompression,
+            boolean enableRenegotiation) {
+        this.useHttpCompression = useHttpCompression;
+        this.enableRenegotiation = enableRenegotiation;
+    }
 
     protected void initChannel(SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
@@ -56,5 +55,5 @@ public class HttpSslInitializer extends ChannelInitializer<SocketChannel> {
             pipeline.addLast("deflater", new HttpContentCompressor());
         }
         pipeline.addLast("handler", new HttpSslHandler());
-	}
+    }
 }

@@ -222,7 +222,6 @@ public class HttpSslHandler extends SimpleChannelInboundHandler<FullHttpRequest>
                 Messages.slocale.equalsIgnoreCase("fr") ? "checked" : "");
     }
 
-
     /**
      * @param builder
      */
@@ -523,7 +522,7 @@ public class HttpSslHandler extends SimpleChannelInboundHandler<FullHttpRequest>
             clearSession();
             admin = new DefaultCookie(R66SESSION + Configuration.configuration.HOST_ID,
                     Configuration.configuration.HOST_ID +
-                    Long.toHexString(random.nextLong()));
+                            Long.toHexString(random.nextLong()));
             sessions.put(admin.value(), this.authentHttp);
             authentHttp.setStatus(72);
             logger.debug("CreateSession: " + uriRequest + ":{}", admin);

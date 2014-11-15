@@ -80,6 +80,6 @@ public class NetworkSslServerInitializer extends
         }
         pipeline.addLast(Configuration.configuration.getHandlerGroup(),
                 NetworkServerInitializer.HANDLER, new NetworkSslServerHandler(
-                !this.isClient));
+                        !this.isClient));
     }
 }

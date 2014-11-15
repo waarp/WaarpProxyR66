@@ -116,8 +116,8 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
                         bindNoSSL = future.channel();
                         serverChannelGroup.add(bindNoSSL);
                     } else {
-                        logger.warn(Messages.getString("Configuration.NOSSLDeactivated") +
-                                " for " + entry.getLocalSocketAddress()); //$NON-NLS-1$
+                        logger.warn(Messages.getString("Configuration.NOSSLDeactivated")
+                                + " for " + entry.getLocalSocketAddress()); //$NON-NLS-1$
                     }
                 }
             }
@@ -134,13 +134,14 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
             // FIXME take into account multiple address
             for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
                 if (entry.isLocalSsl()) {
-                    ChannelFuture future = serverSslBootstrap.bind(entry.getLocalSocketAddress()).awaitUninterruptibly();
+                    ChannelFuture future = serverSslBootstrap.bind(entry.getLocalSocketAddress())
+                            .awaitUninterruptibly();
                     if (future.isSuccess()) {
                         bindSSL = future.channel();
                         serverChannelGroup.add(bindSSL);
                     } else {
-                        logger.warn(Messages.getString("Configuration.SSLMODEDeactivated") +
-                                " for " + entry.getLocalSocketAddress()); //$NON-NLS-1$
+                        logger.warn(Messages.getString("Configuration.SSLMODEDeactivated")
+                                + " for " + entry.getLocalSocketAddress()); //$NON-NLS-1$
                     }
                 }
             }

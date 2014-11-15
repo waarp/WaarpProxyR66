@@ -32,11 +32,11 @@ import io.netty.handler.stream.ChunkedWriteHandler;
  * 
  */
 public class HttpInitializer extends ChannelInitializer<SocketChannel> {
-	public boolean useHttpCompression = false;
+    public boolean useHttpCompression = false;
 
-	public HttpInitializer(boolean useHttpCompression) {
-		this.useHttpCompression = useHttpCompression;
-	}
+    public HttpInitializer(boolean useHttpCompression) {
+        this.useHttpCompression = useHttpCompression;
+    }
 
     protected void initChannel(SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
@@ -47,5 +47,5 @@ public class HttpInitializer extends ChannelInitializer<SocketChannel> {
             pipeline.addLast("deflater", new HttpContentCompressor());
         }
         pipeline.addLast("handler", new HttpFormattedHandler());
-	}
+    }
 }

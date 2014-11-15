@@ -257,10 +257,12 @@ public class HttpFormattedHandler extends SimpleChannelInboundHandler<FullHttpRe
         Configuration.configuration.monitoring.run(nb, detail);
         responseContent.append(Configuration.configuration.monitoring.exportXml(detail));
     }
+
     private void statusjson(ChannelHandlerContext ctx, long nb, boolean detail) {
         Configuration.configuration.monitoring.run(nb, detail);
         responseContent.append(Configuration.configuration.monitoring.exportJson(detail));
     }
+
     /**
      * Write the response
      * 
@@ -386,4 +388,4 @@ public class HttpFormattedHandler extends SimpleChannelInboundHandler<FullHttpRe
             group.add(ctx.channel());
         }
     }
- }
+}

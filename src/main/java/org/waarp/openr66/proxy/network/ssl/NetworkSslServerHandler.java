@@ -73,7 +73,7 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
                     if (!future.isSuccess()) {
                         if (Configuration.configuration.r66Mib != null) {
                             Configuration.configuration.r66Mib.notifyError(
-                                "SSL Connection Error", "During Handshake");
+                                    "SSL Connection Error", "During Handshake");
                         }
                     }
                 }
