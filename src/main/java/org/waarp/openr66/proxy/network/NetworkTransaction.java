@@ -107,7 +107,7 @@ public class NetworkTransaction {
                 lastException = e1;
                 channel = null;
                 try {
-                    Thread.sleep(Configuration.WAITFORNETOP);
+                    Thread.sleep(Configuration.WAITFORNETOP * 5);
                 } catch (InterruptedException e) {
                     break;
                 }
@@ -217,7 +217,7 @@ public class NetworkTransaction {
                 return channel;
             } else {
                 try {
-                    Thread.sleep(Configuration.WAITFORNETOP);
+                    Thread.sleep(Configuration.WAITFORNETOP * 2);
                 } catch (InterruptedException e) {
                 }
                 if (!channelFuture.isDone()) {
