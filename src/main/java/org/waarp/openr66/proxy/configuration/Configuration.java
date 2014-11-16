@@ -65,18 +65,6 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
     }
 
     @Override
-    public void pipelineInit() {
-        if (configured) {
-            return;
-        }
-        WaarpLoggerFactory.setDefaultFactory(WaarpLoggerFactory.getDefaultFactory());
-        httpPipelineInit();
-        logger.warn("Server Thread: " + SERVER_THREAD + " Client Thread: " + CLIENT_THREAD
-                + " Runner Thread: " + RUNNER_THREAD);
-        configured = true;
-    }
-
-    @Override
     public void serverStartup() {
         isServer = true;
         shutdownConfiguration.timeout = TIMEOUTCON;
@@ -86,6 +74,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
             System.exit(-1);
         }
         pipelineInit();
+        serverPipelineInit();
         r66Startup();
         startHttpSupport();
         try {
