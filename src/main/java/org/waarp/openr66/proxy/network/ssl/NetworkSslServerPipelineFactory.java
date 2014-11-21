@@ -24,8 +24,8 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
+import org.jboss.netty.handler.traffic.AbstractTrafficShapingHandler;
 import org.jboss.netty.handler.traffic.ChannelTrafficShapingHandler;
-import org.jboss.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.proxy.network.NetworkPacketCodec;
@@ -66,7 +66,7 @@ public class NetworkSslServerPipelineFactory extends
         pipeline.addLast("ssl", sslHandler);
 
         pipeline.addLast("codec", new NetworkPacketCodec());
-        GlobalTrafficShapingHandler handler = Configuration.configuration
+        AbstractTrafficShapingHandler handler = Configuration.configuration
                 .getGlobalTrafficShapingHandler();
         if (handler != null) {
             pipeline.addLast(NetworkServerPipelineFactory.LIMIT, handler);

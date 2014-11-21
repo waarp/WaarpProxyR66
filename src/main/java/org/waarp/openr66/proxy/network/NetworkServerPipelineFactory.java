@@ -23,8 +23,8 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.execution.ExecutionHandler;
 import org.jboss.netty.handler.timeout.IdleStateHandler;
+import org.jboss.netty.handler.traffic.AbstractTrafficShapingHandler;
 import org.jboss.netty.handler.traffic.ChannelTrafficShapingHandler;
-import org.jboss.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.waarp.openr66.protocol.configuration.Configuration;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 
@@ -44,7 +44,7 @@ public class NetworkServerPipelineFactory extends
     public ChannelPipeline getPipeline() {
         final ChannelPipeline pipeline = Channels.pipeline();
         pipeline.addLast("codec", new NetworkPacketCodec());
-        GlobalTrafficShapingHandler handler =
+        AbstractTrafficShapingHandler handler =
                 Configuration.configuration.getGlobalTrafficShapingHandler();
         if (handler != null) {
             pipeline.addLast(LIMIT, handler);
