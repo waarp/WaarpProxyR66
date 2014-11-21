@@ -30,58 +30,58 @@ import org.waarp.openr66.protocol.utils.R66Future;
  */
 public class LocalTransaction extends org.waarp.openr66.protocol.localhandler.LocalTransaction {
 
-	@Override
-	public LocalChannelReference createNewClient(NetworkChannelReference networkChannelReference,
-			Integer remoteId, R66Future futureRequest) throws OpenR66ProtocolSystemException,
-			OpenR66ProtocolRemoteShutdownException {
-		return null;
-	}
+    @Override
+    public LocalChannelReference createNewClient(NetworkChannelReference networkChannelReference,
+            Integer remoteId, R66Future futureRequest) throws OpenR66ProtocolSystemException,
+            OpenR66ProtocolRemoteShutdownException {
+        return null;
+    }
 
-	@Override
-	protected void remove(LocalChannelReference localChannelReference) {
-	}
+    @Override
+    protected void remove(LocalChannelReference localChannelReference) {
+    }
 
-	/**
+    /**
 	 * 
 	 */
-	public LocalTransaction() {
-	}
+    public LocalTransaction() {
+    }
 
-	@Override
-	public LocalChannelReference getClient(Integer remoteId, Integer localId)
-			throws OpenR66ProtocolSystemException {
-		return null;
-	}
+    @Override
+    public LocalChannelReference getClient(Integer remoteId, Integer localId)
+            throws OpenR66ProtocolSystemException {
+        return null;
+    }
 
-	@Override
-	public LocalChannelReference getFromId(Integer id) {
-		return null;
-	}
+    @Override
+    public LocalChannelReference getFromId(Integer id) {
+        return null;
+    }
 
-	@Override
-	public void setFromId(DbTaskRunner runner, LocalChannelReference lcr) {
-	}
+    @Override
+    public void setFromId(DbTaskRunner runner, LocalChannelReference lcr) {
+    }
 
-	@Override
-	public LocalChannelReference getFromRequest(String key) {
-		return null;
-	}
+    @Override
+    public LocalChannelReference getFromRequest(String key) {
+        return null;
+    }
 
-	@Override
-	public int getNumberLocalChannel() {
-		return ProxyBridge.transaction.getNumberClients();
-	}
+    @Override
+    public int getNumberLocalChannel() {
+        return ProxyBridge.transaction.getNumberClients();
+    }
 
-	@Override
-	public void debugPrintActiveLocalChannels() {
-	}
+    @Override
+    public void debugPrintActiveLocalChannels() {
+    }
 
-	@Override
-	public void shutdownLocalChannels() {
-	}
+    @Override
+    public void shutdownLocalChannels() {
+    }
 
-	@Override
-	public void closeAll() {
-	}
+    @Override
+    public void closeAll() {
+    }
 
 }

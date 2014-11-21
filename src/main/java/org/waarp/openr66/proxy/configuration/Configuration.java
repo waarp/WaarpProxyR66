@@ -45,177 +45,177 @@ import org.waarp.openr66.proxy.protocol.http.adminssl.HttpSslPipelineFactory;
  * 
  */
 public class Configuration extends org.waarp.openr66.protocol.configuration.Configuration {
-	/**
-	 * Internal Logger
-	 */
-	private static final WaarpInternalLogger logger = WaarpInternalLoggerFactory
-			.getLogger(Configuration.class);
+    /**
+     * Internal Logger
+     */
+    private static final WaarpInternalLogger logger = WaarpInternalLoggerFactory
+            .getLogger(Configuration.class);
 
-	/**
+    /**
 	 * 
 	 */
-	public Configuration() {
-		super();
-	}
+    public Configuration() {
+        super();
+    }
 
-	@Override
-	public void computeNbThreads() {
-		int nb = Runtime.getRuntime().availableProcessors() + 1;
-		SERVER_THREAD = nb;
-		CLIENT_THREAD = SERVER_THREAD + 1;
-		RUNNER_THREAD = 10;
-	}
+    @Override
+    public void computeNbThreads() {
+        int nb = Runtime.getRuntime().availableProcessors() + 1;
+        SERVER_THREAD = nb;
+        CLIENT_THREAD = SERVER_THREAD + 1;
+        RUNNER_THREAD = 10;
+    }
 
-	@Override
-	public void pipelineInit() {
-		if (configured) {
-			return;
-		}
-		InternalLoggerFactory.setDefaultFactory(InternalLoggerFactory
-				.getDefaultFactory());
-		objectSizeEstimator = new NetworkPacketSizeEstimator();
-		httpPipelineInit();
-		logger.warn("Server Thread: " + SERVER_THREAD + " Client Thread: " + CLIENT_THREAD
-				+ " Runner Thread: " + RUNNER_THREAD);
-		serverPipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
-				CLIENT_THREAD, maxGlobalMemory / 10, maxGlobalMemory, 1000,
-				TimeUnit.MILLISECONDS, objectSizeEstimator,
-				new WaarpThreadFactory("ServerExecutor"));
-		configured = true;
-	}
+    @Override
+    public void pipelineInit() {
+        if (configured) {
+            return;
+        }
+        InternalLoggerFactory.setDefaultFactory(InternalLoggerFactory
+                .getDefaultFactory());
+        objectSizeEstimator = new NetworkPacketSizeEstimator();
+        httpPipelineInit();
+        logger.warn("Server Thread: " + SERVER_THREAD + " Client Thread: " + CLIENT_THREAD
+                + " Runner Thread: " + RUNNER_THREAD);
+        serverPipelineExecutor = new OrderedMemoryAwareThreadPoolExecutor(
+                CLIENT_THREAD, maxGlobalMemory / 10, maxGlobalMemory, 1000,
+                TimeUnit.MILLISECONDS, objectSizeEstimator,
+                new WaarpThreadFactory("ServerExecutor"));
+        configured = true;
+    }
 
-	@Override
-	public void serverStartup() {
-		isServer = true;
-		shutdownConfiguration.timeout = TIMEOUTCON;
-		R66ShutdownHook.addShutdownHook();
-		if ((!useNOSSL) && (!useSSL)) {
-			logger.error("OpenR66 has neither NOSSL nor SSL support included! Stop here!");
-			System.exit(-1);
-		}
-		pipelineInit();
-		r66Startup();
-		startHttpSupport();
-		try {
-			startMonitoring();
-		} catch (WaarpDatabaseSqlException e) {
-		}
-	}
+    @Override
+    public void serverStartup() {
+        isServer = true;
+        shutdownConfiguration.timeout = TIMEOUTCON;
+        R66ShutdownHook.addShutdownHook();
+        if ((!useNOSSL) && (!useSSL)) {
+            logger.error("OpenR66 has neither NOSSL nor SSL support included! Stop here!");
+            System.exit(-1);
+        }
+        pipelineInit();
+        r66Startup();
+        startHttpSupport();
+        try {
+            startMonitoring();
+        } catch (WaarpDatabaseSqlException e) {}
+    }
 
-	@Override
-	public void r66Startup() {
-		logger.debug("Start R66: " + SERVER_PORT + ":" + useNOSSL + " " + SERVER_SSLPORT + ":"
-				+ useSSL + ":" + HOST_SSLID);
-		// add into configuration
-		this.constraintLimitHandler.setServer(true);
-		// Global Server
-		serverChannelGroup = new DefaultChannelGroup("OpenR66");
+    @Override
+    public void r66Startup() {
+        logger.debug("Start R66: " + SERVER_PORT + ":" + useNOSSL + " " + SERVER_SSLPORT + ":"
+                + useSSL + ":" + HOST_SSLID);
+        // add into configuration
+        this.constraintLimitHandler.setServer(true);
+        // Global Server
+        serverChannelGroup = new DefaultChannelGroup("OpenR66");
 
-		serverChannelFactory = new NioServerSocketChannelFactory(
-				execServerBoss, execServerWorker, SERVER_THREAD);
-		if (useNOSSL) {
-			serverBootstrap = new ServerBootstrap(serverChannelFactory);
-			networkServerPipelineFactory = new NetworkServerPipelineFactory(true);
-			serverBootstrap.setPipelineFactory(networkServerPipelineFactory);
-			serverBootstrap.setOption("child.tcpNoDelay", true);
-			serverBootstrap.setOption("child.keepAlive", true);
-			serverBootstrap.setOption("child.reuseAddress", true);
-			serverBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
-			serverBootstrap.setOption("tcpNoDelay", true);
-			serverBootstrap.setOption("reuseAddress", true);
-			serverBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
-			// FIXME take into account multiple address
-			for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
-				if (!entry.isLocalSsl()) {
-					serverChannelGroup.add(serverBootstrap.bind(entry.getLocalSocketAddress()));
-				}
-			}
-		} else {
-			networkServerPipelineFactory = null;
-			logger.warn("NOSSL mode is deactivated");
-		}
+        serverChannelFactory = new NioServerSocketChannelFactory(
+                execServerBoss, execServerWorker, SERVER_THREAD);
+        if (useNOSSL) {
+            serverBootstrap = new ServerBootstrap(serverChannelFactory);
+            networkServerPipelineFactory = new NetworkServerPipelineFactory(true);
+            serverBootstrap.setPipelineFactory(networkServerPipelineFactory);
+            serverBootstrap.setOption("child.tcpNoDelay", true);
+            serverBootstrap.setOption("child.keepAlive", true);
+            serverBootstrap.setOption("child.reuseAddress", true);
+            serverBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
+            serverBootstrap.setOption("tcpNoDelay", true);
+            serverBootstrap.setOption("reuseAddress", true);
+            serverBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
+            // FIXME take into account multiple address
+            for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
+                if (!entry.isLocalSsl()) {
+                    serverChannelGroup.add(serverBootstrap.bind(entry.getLocalSocketAddress()));
+                }
+            }
+        } else {
+            networkServerPipelineFactory = null;
+            logger.warn("NOSSL mode is deactivated");
+        }
 
-		if (useSSL && HOST_SSLID != null) {
-			serverSslBootstrap = new ServerBootstrap(serverChannelFactory);
-			networkSslServerPipelineFactory = new NetworkSslServerPipelineFactory(false);
-			serverSslBootstrap.setPipelineFactory(networkSslServerPipelineFactory);
-			serverSslBootstrap.setOption("child.tcpNoDelay", true);
-			serverSslBootstrap.setOption("child.keepAlive", true);
-			serverSslBootstrap.setOption("child.reuseAddress", true);
-			serverSslBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
-			serverSslBootstrap.setOption("tcpNoDelay", true);
-			serverSslBootstrap.setOption("reuseAddress", true);
-			serverSslBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
-			// FIXME take into account multiple address
-			for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
-				if (entry.isLocalSsl()) {
-					serverChannelGroup.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));
-				}
-			}
-		} else {
-			networkSslServerPipelineFactory = null;
-			logger.warn("SSL mode is desactivated");
-		}
+        if (useSSL && HOST_SSLID != null) {
+            serverSslBootstrap = new ServerBootstrap(serverChannelFactory);
+            networkSslServerPipelineFactory = new NetworkSslServerPipelineFactory(false);
+            serverSslBootstrap.setPipelineFactory(networkSslServerPipelineFactory);
+            serverSslBootstrap.setOption("child.tcpNoDelay", true);
+            serverSslBootstrap.setOption("child.keepAlive", true);
+            serverSslBootstrap.setOption("child.reuseAddress", true);
+            serverSslBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
+            serverSslBootstrap.setOption("tcpNoDelay", true);
+            serverSslBootstrap.setOption("reuseAddress", true);
+            serverSslBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
+            // FIXME take into account multiple address
+            for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
+                if (entry.isLocalSsl()) {
+                    serverChannelGroup.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));
+                }
+            }
+        } else {
+            networkSslServerPipelineFactory = null;
+            logger.warn("SSL mode is desactivated");
+        }
 
-		// Factory for TrafficShapingHandler
-		globalTrafficShapingHandler = new GlobalTrafficHandler(
-				objectSizeEstimator, timerTrafficCounter,
-				serverGlobalWriteLimit, serverGlobalReadLimit, delayLimit);
-		this.constraintLimitHandler.setHandler(globalTrafficShapingHandler);
-		ProxyBridge.initialize();
-		localTransaction = new LocalTransaction();
-		thriftService = null;
-	}
+        // Factory for TrafficShapingHandler
+        globalTrafficShapingHandler = new GlobalTrafficHandler(
+                objectSizeEstimator, timerTrafficCounter,
+                serverGlobalWriteLimit, serverGlobalReadLimit,
+                serverChannelWriteLimit, serverChannelReadLimit, delayLimit);
+        this.constraintLimitHandler.setHandler(globalTrafficShapingHandler);
+        ProxyBridge.initialize();
+        localTransaction = new LocalTransaction();
+        thriftService = null;
+    }
 
-	@Override
-	public void startHttpSupport() {
-		// Now start the HTTP support
-		httpChannelGroup = new DefaultChannelGroup("HttpOpenR66");
-		// Configure the server.
-		httpChannelFactory = new NioServerSocketChannelFactory(
-				execServerBoss,
-				execServerWorker,
-				SERVER_THREAD);
-		httpBootstrap = new ServerBootstrap(
-				httpChannelFactory);
-		// Set up the event pipeline factory.
-		httpBootstrap.setPipelineFactory(new HttpPipelineFactory(useHttpCompression));
-		httpBootstrap.setOption("child.tcpNoDelay", true);
-		httpBootstrap.setOption("child.keepAlive", true);
-		httpBootstrap.setOption("child.reuseAddress", true);
-		httpBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
-		httpBootstrap.setOption("tcpNoDelay", true);
-		httpBootstrap.setOption("reuseAddress", true);
-		httpBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
-		// Bind and start to accept incoming connections.
-		httpChannelGroup.add(httpBootstrap.bind(new InetSocketAddress(SERVER_HTTPPORT)));
+    @Override
+    public void startHttpSupport() {
+        // Now start the HTTP support
+        httpChannelGroup = new DefaultChannelGroup("HttpOpenR66");
+        // Configure the server.
+        httpChannelFactory = new NioServerSocketChannelFactory(
+                execServerBoss,
+                execServerWorker,
+                SERVER_THREAD);
+        httpBootstrap = new ServerBootstrap(
+                httpChannelFactory);
+        // Set up the event pipeline factory.
+        httpBootstrap.setPipelineFactory(new HttpPipelineFactory(useHttpCompression));
+        httpBootstrap.setOption("child.tcpNoDelay", true);
+        httpBootstrap.setOption("child.keepAlive", true);
+        httpBootstrap.setOption("child.reuseAddress", true);
+        httpBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
+        httpBootstrap.setOption("tcpNoDelay", true);
+        httpBootstrap.setOption("reuseAddress", true);
+        httpBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
+        // Bind and start to accept incoming connections.
+        httpChannelGroup.add(httpBootstrap.bind(new InetSocketAddress(SERVER_HTTPPORT)));
 
-		// Now start the HTTPS support
-		// Configure the server.
-		httpsChannelFactory = new NioServerSocketChannelFactory(
-				execServerBoss,
-				execServerWorker,
-				SERVER_THREAD);
-		httpsBootstrap = new ServerBootstrap(
-				httpsChannelFactory);
-		// Set up the event pipeline factory.
-		httpsBootstrap.setPipelineFactory(new HttpSslPipelineFactory(useHttpCompression,
-				false));
-		httpsBootstrap.setOption("child.tcpNoDelay", true);
-		httpsBootstrap.setOption("child.keepAlive", true);
-		httpsBootstrap.setOption("child.reuseAddress", true);
-		httpsBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
-		httpsBootstrap.setOption("tcpNoDelay", true);
-		httpsBootstrap.setOption("reuseAddress", true);
-		httpsBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
-		// Bind and start to accept incoming connections.
-		httpChannelGroup.add(httpsBootstrap.bind(new InetSocketAddress(SERVER_HTTPSPORT)));
-	}
+        // Now start the HTTPS support
+        // Configure the server.
+        httpsChannelFactory = new NioServerSocketChannelFactory(
+                execServerBoss,
+                execServerWorker,
+                SERVER_THREAD);
+        httpsBootstrap = new ServerBootstrap(
+                httpsChannelFactory);
+        // Set up the event pipeline factory.
+        httpsBootstrap.setPipelineFactory(new HttpSslPipelineFactory(useHttpCompression,
+                false));
+        httpsBootstrap.setOption("child.tcpNoDelay", true);
+        httpsBootstrap.setOption("child.keepAlive", true);
+        httpsBootstrap.setOption("child.reuseAddress", true);
+        httpsBootstrap.setOption("child.connectTimeoutMillis", TIMEOUTCON);
+        httpsBootstrap.setOption("tcpNoDelay", true);
+        httpsBootstrap.setOption("reuseAddress", true);
+        httpsBootstrap.setOption("connectTimeoutMillis", TIMEOUTCON);
+        // Bind and start to accept incoming connections.
+        httpChannelGroup.add(httpsBootstrap.bind(new InetSocketAddress(SERVER_HTTPSPORT)));
+    }
 
-	@Override
-	public void serverStop() {
-		super.serverStop();
-		ProxyBridge.transaction.closeAll();
-	}
+    @Override
+    public void serverStop() {
+        super.serverStop();
+        ProxyBridge.transaction.closeAll();
+    }
 
 }

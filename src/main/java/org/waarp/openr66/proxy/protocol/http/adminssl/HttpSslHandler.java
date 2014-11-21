@@ -53,6 +53,8 @@ import org.waarp.common.exception.FileTransferException;
 import org.waarp.common.exception.InvalidArgumentException;
 import org.waarp.common.logging.WaarpInternalLogger;
 import org.waarp.common.logging.WaarpInternalLoggerFactory;
+import org.waarp.common.logging.WaarpInternalLoggerInterface;
+import org.waarp.common.logging.WaarpInternalLoggerInterface.WaarpLevel;
 import org.waarp.common.utility.WaarpStringUtils;
 import org.waarp.gateway.kernel.http.HttpWriteCacheEnable;
 import org.waarp.openr66.context.R66Session;
@@ -70,644 +72,693 @@ import org.waarp.openr66.proxy.configuration.Configuration;
  * 
  */
 public class HttpSslHandler extends SimpleChannelUpstreamHandler {
-	/**
-	 * Internal Logger
-	 */
-	private static final WaarpInternalLogger logger = WaarpInternalLoggerFactory
-			.getLogger(HttpSslHandler.class);
-	/**
-	 * Session Management
-	 */
-	private static final ConcurrentHashMap<String, R66Session> sessions = new ConcurrentHashMap<String, R66Session>();
-	private static final Random random = new Random();
-	
-	private R66Session authentHttp = new R66Session();
+    /**
+     * Internal Logger
+     */
+    private static final WaarpInternalLogger logger = WaarpInternalLoggerFactory
+            .getLogger(HttpSslHandler.class);
+    /**
+     * Session Management
+     */
+    private static final ConcurrentHashMap<String, R66Session> sessions = new ConcurrentHashMap<String, R66Session>();
+    private static final Random random = new Random();
 
-	private HttpRequest request;
-	private volatile boolean newSession = false;
-	private volatile Cookie admin = null;
-	private final StringBuilder responseContent = new StringBuilder();
-	private String uriRequest;
-	private Map<String, List<String>> params;
-	private String lang = Messages.slocale;
-	private QueryStringDecoder queryStringDecoder;
-	private volatile boolean forceClose = false;
-	private volatile boolean shutdown = false;
+    private R66Session authentHttp = new R66Session();
 
-	private static final String R66SESSION = "R66SESSION";
-	private static final String I18NEXT = "i18next";
+    private HttpRequest request;
+    private volatile boolean newSession = false;
+    private volatile Cookie admin = null;
+    private final StringBuilder responseContent = new StringBuilder();
+    private String uriRequest;
+    private Map<String, List<String>> params;
+    private String lang = Messages.slocale;
+    private QueryStringDecoder queryStringDecoder;
+    private volatile boolean forceClose = false;
+    private volatile boolean shutdown = false;
 
-	private static enum REQUEST {
-		Logon("Logon.html"),
-		index("index.html"),
-		error("error.html"),
-		System("System.html");
+    private static final String R66SESSION = "R66SESSION";
+    private static final String I18NEXT = "i18next";
 
-		private String header;
+    private static enum REQUEST {
+        Logon("Logon.html"),
+        index("index.html"),
+        error("error.html"),
+        System("System.html");
 
-		/**
-		 * Constructor for a unique file
-		 * 
-		 * @param uniquefile
-		 */
-		private REQUEST(String uniquefile) {
-			this.header = uniquefile;
-		}
+        private String header;
 
-		/**
-		 * Reader for a unique file
-		 * 
-		 * @return the content of the unique file
-		 */
-		public String readFileUnique(HttpSslHandler handler) {
-			return handler.readFileHeader(Configuration.configuration.httpBasePath + this.header);
-		}
-	}
+        /**
+         * Constructor for a unique file
+         * 
+         * @param uniquefile
+         */
+        private REQUEST(String uniquefile) {
+            this.header = uniquefile;
+        }
 
-	private static enum REPLACEMENT {
-		XXXHOSTIDXXX, XXXADMINXXX, XXXVERSIONXXX, XXXBANDWIDTHXXX,
-		XXXXSESSIONLIMITRXXX, XXXXSESSIONLIMITWXXX,
-		XXXXCHANNELLIMITRXXX, XXXXCHANNELLIMITWXXX,
-		XXXXDELAYCOMMDXXX, XXXXDELAYRETRYXXX,
-		XXXLOCALXXX, XXXNETWORKXXX,
-		XXXERRORMESGXXX, 
-		XXXLANGXXX, XXXCURLANGENXXX, XXXCURLANGFRXXX, XXXCURSYSLANGENXXX, XXXCURSYSLANGFRXXX;
-	}
+        /**
+         * Reader for a unique file
+         * 
+         * @return the content of the unique file
+         */
+        public String readFileUnique(HttpSslHandler handler) {
+            return handler.readFileHeader(Configuration.configuration.httpBasePath + this.header);
+        }
+    }
 
-	public static final int LIMITROW = 48; // better if it can
-											// be divided by 4
+    private static enum REPLACEMENT {
+        XXXHOSTIDXXX, XXXADMINXXX, XXXVERSIONXXX, XXXBANDWIDTHXXX,
+        XXXXSESSIONLIMITRXXX, XXXXSESSIONLIMITWXXX,
+        XXXXCHANNELLIMITRXXX, XXXXCHANNELLIMITWXXX,
+        XXXXDELAYCOMMDXXX, XXXXDELAYRETRYXXX,
+        XXXLOCALXXX, XXXNETWORKXXX,
+        XXXERRORMESGXXX,
+        XXXLANGXXX, XXXCURLANGENXXX, XXXCURLANGFRXXX, XXXCURSYSLANGENXXX, XXXCURSYSLANGFRXXX;
+    }
 
-	private String readFileHeader(String filename) {
-		String value;
-		try {
-			value = WaarpStringUtils.readFileException(filename);
-		} catch (InvalidArgumentException e) {
-			logger.error("Error while trying to open: " + filename, e);
-			return "";
-		} catch (FileTransferException e) {
-			logger.error("Error while trying to read: " + filename, e);
-			return "";
-		}
-		StringBuilder builder = new StringBuilder(value);
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCALXXX.toString(),
-				Integer.toString(
-						Configuration.configuration.getLocalTransaction().
-								getNumberLocalChannel()) + " " + Thread.activeCount());
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETWORKXXX.toString(),
-				Integer.toString(
-						Configuration.configuration.getLocalTransaction().
-								getNumberLocalChannel()));
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-				Configuration.configuration.HOST_ID);
-		if (authentHttp.isAuthenticated()) {
-			WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
-					Messages.getString("HttpSslHandler.1")); //$NON-NLS-1$
-		} else {
-			WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
-					Messages.getString("HttpSslHandler.0")); //$NON-NLS-1$
-		}
-		TrafficCounter trafficCounter =
-				Configuration.configuration.getGlobalTrafficShapingHandler().getTrafficCounter();
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
-				Messages.getString("HttpSslHandler.IN") + (trafficCounter.getLastReadThroughput() >> 17) + //$NON-NLS-1$
-						Messages.getString("HttpSslHandler.OUT") + //$NON-NLS-1$
-						(trafficCounter.getLastWriteThroughput() >> 17) + "Mbits");
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
-		return builder.toString();
-	}
+    public static final int LIMITROW = 48; // better if it can
+                                           // be divided by 4
 
-	private String getTrimValue(String varname) {
-		String value = params.get(varname).get(0).trim();
-		if (value.isEmpty()) {
-			value = null;
-		}
-		return value;
-	}
+    private String readFileHeader(String filename) {
+        String value;
+        try {
+            value = WaarpStringUtils.readFileException(filename);
+        } catch (InvalidArgumentException e) {
+            logger.error("Error while trying to open: " + filename, e);
+            return "";
+        } catch (FileTransferException e) {
+            logger.error("Error while trying to read: " + filename, e);
+            return "";
+        }
+        StringBuilder builder = new StringBuilder(value);
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXLOCALXXX.toString(),
+                Integer.toString(
+                        Configuration.configuration.getLocalTransaction().
+                                getNumberLocalChannel()) + " " + Thread.activeCount());
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXNETWORKXXX.toString(),
+                Integer.toString(
+                        Configuration.configuration.getLocalTransaction().
+                                getNumberLocalChannel()));
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
+                Configuration.configuration.HOST_ID);
+        if (authentHttp.isAuthenticated()) {
+            WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
+                    Messages.getString("HttpSslHandler.1")); //$NON-NLS-1$
+        } else {
+            WaarpStringUtils.replace(builder, REPLACEMENT.XXXADMINXXX.toString(),
+                    Messages.getString("HttpSslHandler.0")); //$NON-NLS-1$
+        }
+        TrafficCounter trafficCounter =
+                Configuration.configuration.getGlobalTrafficShapingHandler().getTrafficCounter();
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
+                Messages.getString("HttpSslHandler.IN") + (trafficCounter.getLastReadThroughput() >> 20) + //$NON-NLS-1$
+                Messages.getString("HttpSslHandler.MOPS") + //$NON-NLS-1$
+                Messages.getString("HttpSslHandler.OUT") + //$NON-NLS-1$
+                (trafficCounter.getLastWriteThroughput() >> 20) + 
+                Messages.getString("HttpSslHandler.MOPS")); //$NON-NLS-1$
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
+        return builder.toString();
+    }
 
-	private String index() {
-		String index = REQUEST.index.readFileUnique(this);
-		StringBuilder builder = new StringBuilder(index);
-		WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-				Configuration.configuration.HOST_ID);
-		WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXADMINXXX.toString(),
-				"Administrator Connected");
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXVERSIONXXX.toString(),
-				Version.ID);
-		return builder.toString();
-	}
+    private String getTrimValue(String varname) {
+        String value = params.get(varname).get(0).trim();
+        if (value.isEmpty()) {
+            value = null;
+        }
+        return value;
+    }
 
-	private String error(String mesg) {
-		String index = REQUEST.error.readFileUnique(this);
-		return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
-				mesg);
-	}
+    private String index() {
+        String index = REQUEST.index.readFileUnique(this);
+        StringBuilder builder = new StringBuilder(index);
+        WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
+                Configuration.configuration.HOST_ID);
+        WaarpStringUtils.replaceAll(builder, REPLACEMENT.XXXADMINXXX.toString(),
+                "Administrator Connected");
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXVERSIONXXX.toString(),
+                Version.ID);
+        return builder.toString();
+    }
 
-	private String Logon() {
-		return REQUEST.Logon.readFileUnique(this);
-	}
+    private String error(String mesg) {
+        String index = REQUEST.error.readFileUnique(this);
+        return index.replaceAll(REPLACEMENT.XXXERRORMESGXXX.toString(),
+                mesg);
+    }
 
-	/**
-	 * Applied current lang to system page
-	 * @param builder
-	 */
-	private void langHandle(StringBuilder builder) {
-		// i18n: add here any new languages
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGENXXX.name(), lang.equalsIgnoreCase("en") ? "checked" : "");
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGFRXXX.name(), lang.equalsIgnoreCase("fr") ? "checked" : "");
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGENXXX.name(), Messages.slocale.equalsIgnoreCase("en") ? "checked" : "");
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGFRXXX.name(), Messages.slocale.equalsIgnoreCase("fr") ? "checked" : "");
-	}
+    private String Logon() {
+        return REQUEST.Logon.readFileUnique(this);
+    }
 
-	private String System() {
-		getParams();
-		if (params == null) {
-			String system = REQUEST.System.readFileUnique(this);
-			StringBuilder builder = new StringBuilder(system);
-			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
-					Long.toString(Configuration.configuration.serverChannelWriteLimit));
-			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),
-					Long.toString(Configuration.configuration.serverChannelReadLimit));
-			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYCOMMDXXX.toString(),
-					Long.toString(Configuration.configuration.delayCommander));
-			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYRETRYXXX.toString(),
-					Long.toString(Configuration.configuration.delayRetry));
-			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),
-					Long.toString(Configuration.configuration.serverGlobalWriteLimit));
-			WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
-					Long.toString(Configuration.configuration.serverGlobalReadLimit));
-			langHandle(builder);
-			return builder.toString();
-		}
-		String extraInformation = null;
-		if (params.containsKey("ACTION")) {
-			List<String> action = params.get("ACTION");
-			for (String act : action) {
-				if (act.equalsIgnoreCase("Language")) {
-					lang = getTrimValue("change");
-					String sys = getTrimValue("changesys");
-					Messages.init(new Locale(sys));
-					extraInformation = Messages.getString("HttpSslHandler.LangIs")+"Web: "+lang+" OpenR66: "+Messages.slocale; //$NON-NLS-1$
-				} else if (act.equalsIgnoreCase("Disconnect")) {
-					String logon = Logon();
-					newSession = true;
-					clearSession();
-					forceClose = true;
-					return logon;
-				} else if (act.equalsIgnoreCase("Shutdown")) {
-					String error;
-					if (Configuration.configuration.shutdownConfiguration.serviceFuture != null) {
-						error = error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
-					} else {
-						error = error(Messages.getString("HttpSslHandler.37")); //$NON-NLS-1$
-					}
-					R66ShutdownHook.setRestart(false);
-					newSession = true;
-					clearSession();
-					forceClose = true;
-					shutdown = true;
-					return error;
-				} else if (act.equalsIgnoreCase("Restart")) {
-					String error;
-					if (Configuration.configuration.shutdownConfiguration.serviceFuture != null) {
-						error = error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
-					} else {
-						error = error(Messages.getString("HttpSslHandler.39")+(Configuration.configuration.TIMEOUTCON*2/1000)+Messages.getString("HttpSslHandler.40")); //$NON-NLS-1$ //$NON-NLS-2$
-					}
-					error = error.replace("XXXRELOADHTTPXXX", "HTTP-EQUIV=\"refresh\" CONTENT=\""+(Configuration.configuration.TIMEOUTCON*2/1000)+"\"");
-					R66ShutdownHook.setRestart(true);
-					newSession = true;
-					clearSession();
-					forceClose = true;
-					shutdown = true;
-					return error;
-				} else if (act.equalsIgnoreCase("Validate")) {
-					String bsessionr = getTrimValue("BSESSR");
-					long lsessionr = Configuration.configuration.serverChannelReadLimit;
-					long lglobalr;
-					long lsessionw;
-					long lglobalw;
-					try {
-						if (bsessionr != null) {
-							lsessionr = (Long.parseLong(bsessionr) / 10) * 10;
-						}
-						String bglobalr = getTrimValue("BGLOBR");
-						lglobalr = Configuration.configuration.serverGlobalReadLimit;
-						if (bglobalr != null) {
-							lglobalr = (Long.parseLong(bglobalr) / 10) * 10;
-						}
-						String bsessionw = getTrimValue("BSESSW");
-						lsessionw = Configuration.configuration.serverChannelWriteLimit;
-						if (bsessionw != null) {
-							lsessionw = (Long.parseLong(bsessionw) / 10) * 10;
-						}
-						String bglobalw = getTrimValue("BGLOBW");
-						lglobalw = Configuration.configuration.serverGlobalWriteLimit;
-						if (bglobalw != null) {
-							lglobalw = (Long.parseLong(bglobalw) / 10) * 10;
-						}
-						Configuration.configuration.changeNetworkLimit(
-								lglobalw, lglobalr, lsessionw, lsessionr,
-								Configuration.configuration.delayLimit);
-						String dcomm = getTrimValue("DCOM");
-						if (dcomm != null) {
-							Configuration.configuration.delayCommander = Long.parseLong(dcomm);
-							if (Configuration.configuration.delayCommander <= 100) {
-								Configuration.configuration.delayCommander = 100;
-							}
-							Configuration.configuration.reloadCommanderDelay();
-						}
-						String dret = getTrimValue("DRET");
-						if (dret != null) {
-							Configuration.configuration.delayRetry = Long.parseLong(dret);
-							if (Configuration.configuration.delayRetry <= 1000) {
-								Configuration.configuration.delayRetry = 1000;
-							}
-						}
-						extraInformation = Messages.getString("HttpSslHandler.41"); //$NON-NLS-1$
-					} catch (NumberFormatException e) {
-						extraInformation = Messages.getString("HttpSslHandler.42"); //$NON-NLS-1$
-					}
-				}
-			}
-		}
-		String system = REQUEST.System.readFileUnique(this);
-		StringBuilder builder = new StringBuilder(system);
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
-				Long.toString(Configuration.configuration.serverChannelWriteLimit));
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),
-				Long.toString(Configuration.configuration.serverChannelReadLimit));
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYCOMMDXXX.toString(),
-				Long.toString(Configuration.configuration.delayCommander));
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYRETRYXXX.toString(),
-				Long.toString(Configuration.configuration.delayRetry));
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),
-				Long.toString(Configuration.configuration.serverGlobalWriteLimit));
-		WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
-				Long.toString(Configuration.configuration.serverGlobalReadLimit));
-		langHandle(builder);
-		if (extraInformation != null) {
-			builder.append(extraInformation);
-		}
-		return builder.toString();
-	}
+    /**
+     * Applied current lang to system page
+     * 
+     * @param builder
+     */
+    private void langHandle(StringBuilder builder) {
+        // i18n: add here any new languages
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGENXXX.name(), lang.equalsIgnoreCase("en") ? "checked"
+                : "");
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURLANGFRXXX.name(), lang.equalsIgnoreCase("fr") ? "checked"
+                : "");
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGENXXX.name(),
+                Messages.slocale.equalsIgnoreCase("en") ? "checked" : "");
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXCURSYSLANGFRXXX.name(),
+                Messages.slocale.equalsIgnoreCase("fr") ? "checked" : "");
+    }
 
-	private void getParams() {
-		if (request.getMethod() == HttpMethod.GET) {
-			params = null;
-		} else if (request.getMethod() == HttpMethod.POST) {
-			ChannelBuffer content = request.getContent();
-			if (content.readable()) {
-				String param = content.toString(WaarpStringUtils.UTF8);
-				QueryStringDecoder queryStringDecoder2 = new QueryStringDecoder("/?" + param);
-				params = queryStringDecoder2.getParameters();
-			} else {
-				params = null;
-			}
-		}
-	}
+    private void replaceStringSystem(StringBuilder builder) {
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXXSESSIONLIMITWXXX.toString(),
+                Long.toString(Configuration.configuration.serverChannelWriteLimit));
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXXSESSIONLIMITRXXX.toString(),
+                Long.toString(Configuration.configuration.serverChannelReadLimit));
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYCOMMDXXX.toString(),
+                Long.toString(Configuration.configuration.delayCommander));
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXXDELAYRETRYXXX.toString(),
+                Long.toString(Configuration.configuration.delayRetry));
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITWXXX.toString(),
+                Long.toString(Configuration.configuration.serverGlobalWriteLimit));
+        WaarpStringUtils.replace(builder, REPLACEMENT.XXXXCHANNELLIMITRXXX.toString(),
+                Long.toString(Configuration.configuration.serverGlobalReadLimit));
+        WaarpStringUtils.replace(builder, "XXXBLOCKXXX", Configuration.configuration.isShutdown ? "checked" : "");
+        switch (WaarpInternalLoggerFactory.currentLevel) {
+            case DEBUG:
+                WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "checked");
+                WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
+                break;
+            case INFO:
+                WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "checked");
+                WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
+                break;
+            case WARN:
+                WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "checked");
+                WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
+                break;
+            case ERROR:
+                WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "checked");
+                break;
+            default:
+                WaarpStringUtils.replace(builder, "XXXLEVEL1XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL2XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL3XXX", "");
+                WaarpStringUtils.replace(builder, "XXXLEVEL4XXX", "");
+                break;
 
-	private void clearSession() {
-		if (admin != null) {
-			R66Session lsession = sessions.remove(admin.getValue());
-			admin = null;
-			if (lsession != null) {
-				lsession.setStatus(75);
-				lsession.clear();
-			}
-		}
-	}
+        }
+    }
 
-	private void checkAuthent(MessageEvent e) {
-		newSession = true;
-		if (request.getMethod() == HttpMethod.GET) {
-			String logon = Logon();
-			responseContent.append(logon);
-			clearSession();
-			writeResponse(e.getChannel());
-			return;
-		} else if (request.getMethod() == HttpMethod.POST) {
-			getParams();
-			if (params == null) {
-				String logon = Logon();
-				responseContent.append(logon);
-				clearSession();
-				writeResponse(e.getChannel());
-				return;
-			}
-		}
-		boolean getMenu = false;
-		if (params.containsKey("Logon")) {
-			String name = null, password = null;
-			List<String> values = null;
-			if (!params.isEmpty()) {
-				// get values
-				if (params.containsKey("name")) {
-					values = params.get("name");
-					if (values != null) {
-						name = values.get(0);
-						if (name == null || name.isEmpty()) {
-							getMenu = true;
-						}
-					}
-				} else {
-					getMenu = true;
-				}
-				// search the nb param
-				if ((!getMenu) && params.containsKey("passwd")) {
-					values = params.get("passwd");
-					if (values != null) {
-						password = values.get(0);
-						if (password == null || password.isEmpty()) {
-							getMenu = true;
-						} else {
-							getMenu = false;
-						}
-					} else {
-						getMenu = true;
-					}
-				} else {
-					getMenu = true;
-				}
-			} else {
-				getMenu = true;
-			}
-			if (!getMenu) {
-				logger.debug("Name=" + name + " vs "
-						+ name.equals(Configuration.configuration.ADMINNAME) +
-						" Passwd vs " + Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
-								Configuration.configuration.getSERVERADMINKEY()));
-				if (name.equals(Configuration.configuration.ADMINNAME) &&
-						Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
-								Configuration.configuration.getSERVERADMINKEY())) {
-					authentHttp.getAuth().specialNoSessionAuth(true,
-							Configuration.configuration.HOST_ID);
-					authentHttp.setStatus(70);
-				} else {
-					getMenu = true;
-				}
-				if (!authentHttp.isAuthenticated()) {
-					authentHttp.setStatus(71);
-					logger.debug("Still not authenticated: {}", authentHttp);
-					getMenu = true;
-				}
-			}
-		} else {
-			getMenu = true;
-		}
-		if (getMenu) {
-			String logon = Logon();
-			responseContent.append(logon);
-			clearSession();
-			writeResponse(e.getChannel());
-		} else {
-			String index = index();
-			responseContent.append(index);
-			clearSession();
-			admin = new DefaultCookie(R66SESSION, Configuration.configuration.HOST_ID +
-					Long.toHexString(random.nextLong()));
-			sessions.put(admin.getValue(), this.authentHttp);
-			authentHttp.setStatus(72);
-			logger.debug("CreateSession: " + uriRequest + ":{}", admin);
-			writeResponse(e.getChannel());
-		}
-	}
+    private String System() {
+        getParams();
+        if (params == null) {
+            String system = REQUEST.System.readFileUnique(this);
+            StringBuilder builder = new StringBuilder(system);
+            replaceStringSystem(builder);
+            langHandle(builder);
+            return builder.toString();
+        }
+        String extraInformation = null;
+        if (params.containsKey("ACTION")) {
+            List<String> action = params.get("ACTION");
+            for (String act : action) {
+                if (act.equalsIgnoreCase("Language")) {
+                    lang = getTrimValue("change");
+                    String sys = getTrimValue("changesys");
+                    Messages.init(new Locale(sys));
+                    extraInformation = Messages.getString("HttpSslHandler.LangIs") + "Web: " + lang + " OpenR66: " + Messages.slocale; //$NON-NLS-1$
+                } else if (act.equalsIgnoreCase("Level")) {
+                    String loglevel = getTrimValue("loglevel");
+                    WaarpInternalLoggerInterface.WaarpLevel level = WaarpLevel.WARN;
+                    if (loglevel.equalsIgnoreCase("debug")) {
+                        level = WaarpLevel.DEBUG;
+                    } else if (loglevel.equalsIgnoreCase("info")) {
+                        level = WaarpLevel.INFO;
+                    } else if (loglevel.equalsIgnoreCase("warn")) {
+                        level = WaarpLevel.WARN;
+                    } else if (loglevel.equalsIgnoreCase("error")) {
+                        level = WaarpLevel.ERROR;
+                    }
+                    WaarpInternalLoggerFactory.setLogLevel(level);
+                    extraInformation = Messages.getString("HttpSslHandler.LangIs") + level.name(); //$NON-NLS-1$
+                } else if (act.equalsIgnoreCase("Disconnect")) {
+                    String logon = Logon();
+                    newSession = true;
+                    clearSession();
+                    forceClose = true;
+                    return logon;
+                } else if (act.equalsIgnoreCase("Shutdown")) {
+                    String error;
+                    if (Configuration.configuration.shutdownConfiguration.serviceFuture != null) {
+                        error = error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
+                    } else {
+                        error = error(Messages.getString("HttpSslHandler.37")); //$NON-NLS-1$
+                    }
+                    R66ShutdownHook.setRestart(false);
+                    newSession = true;
+                    clearSession();
+                    forceClose = true;
+                    shutdown = true;
+                    return error;
+                } else if (act.equalsIgnoreCase("Restart")) {
+                    String error;
+                    if (Configuration.configuration.shutdownConfiguration.serviceFuture != null) {
+                        error = error(Messages.getString("HttpSslHandler.38")); //$NON-NLS-1$
+                    } else {
+                        error = error(Messages.getString("HttpSslHandler.39") + (Configuration.configuration.TIMEOUTCON * 2 / 1000) + Messages.getString("HttpSslHandler.40")); //$NON-NLS-1$ //$NON-NLS-2$
+                    }
+                    error = error.replace("XXXRELOADHTTPXXX", "HTTP-EQUIV=\"refresh\" CONTENT=\""
+                            + (Configuration.configuration.TIMEOUTCON * 2 / 1000) + "\"");
+                    R66ShutdownHook.setRestart(true);
+                    newSession = true;
+                    clearSession();
+                    forceClose = true;
+                    shutdown = true;
+                    return error;
+                } else if (act.equalsIgnoreCase("Validate")) {
+                    String bsessionr = getTrimValue("BSESSR");
+                    long lsessionr = Configuration.configuration.serverChannelReadLimit;
+                    long lglobalr;
+                    long lsessionw;
+                    long lglobalw;
+                    try {
+                        if (bsessionr != null) {
+                            lsessionr = (Long.parseLong(bsessionr) / 10) * 10;
+                        }
+                        String bglobalr = getTrimValue("BGLOBR");
+                        lglobalr = Configuration.configuration.serverGlobalReadLimit;
+                        if (bglobalr != null) {
+                            lglobalr = (Long.parseLong(bglobalr) / 10) * 10;
+                        }
+                        String bsessionw = getTrimValue("BSESSW");
+                        lsessionw = Configuration.configuration.serverChannelWriteLimit;
+                        if (bsessionw != null) {
+                            lsessionw = (Long.parseLong(bsessionw) / 10) * 10;
+                        }
+                        String bglobalw = getTrimValue("BGLOBW");
+                        lglobalw = Configuration.configuration.serverGlobalWriteLimit;
+                        if (bglobalw != null) {
+                            lglobalw = (Long.parseLong(bglobalw) / 10) * 10;
+                        }
+                        Configuration.configuration.changeNetworkLimit(
+                                lglobalw, lglobalr, lsessionw, lsessionr,
+                                Configuration.configuration.delayLimit);
+                        String dcomm = getTrimValue("DCOM");
+                        if (dcomm != null) {
+                            Configuration.configuration.delayCommander = Long.parseLong(dcomm);
+                            if (Configuration.configuration.delayCommander <= 100) {
+                                Configuration.configuration.delayCommander = 100;
+                            }
+                            Configuration.configuration.reloadCommanderDelay();
+                        }
+                        String dret = getTrimValue("DRET");
+                        if (dret != null) {
+                            Configuration.configuration.delayRetry = Long.parseLong(dret);
+                            if (Configuration.configuration.delayRetry <= 1000) {
+                                Configuration.configuration.delayRetry = 1000;
+                            }
+                        }
+                        extraInformation = Messages.getString("HttpSslHandler.41"); //$NON-NLS-1$
+                    } catch (NumberFormatException e) {
+                        extraInformation = Messages.getString("HttpSslHandler.42"); //$NON-NLS-1$
+                    }
+                }
+            }
+        }
+        String system = REQUEST.System.readFileUnique(this);
+        StringBuilder builder = new StringBuilder(system);
+        replaceStringSystem(builder);
+        langHandle(builder);
+        if (extraInformation != null) {
+            builder.append(extraInformation);
+        }
+        return builder.toString();
+    }
 
-	@Override
-	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-		HttpRequest request = this.request = (HttpRequest) e.getMessage();
-		queryStringDecoder = new QueryStringDecoder(request.getUri());
-		uriRequest = queryStringDecoder.getPath();
-		logger.debug("Msg: " + uriRequest);
-		if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
-				uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
-			HttpWriteCacheEnable.writeFile(request,
-					e.getChannel(), Configuration.configuration.httpBasePath + uriRequest,
-					R66SESSION);
-			return;
-		}
-		checkSession(e.getChannel());
-		if (!authentHttp.isAuthenticated()) {
-			logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
-			checkAuthent(e);
-			return;
-		}
-		String find = uriRequest;
-		if (uriRequest.charAt(0) == '/') {
-			find = uriRequest.substring(1);
-		}
-		find = find.substring(0, find.indexOf("."));
-		REQUEST req = REQUEST.index;
-		try {
-			req = REQUEST.valueOf(find);
-		} catch (IllegalArgumentException e1) {
-			req = REQUEST.index;
-			logger.debug("NotFound: " + find + ":" + uriRequest);
-		}
-		switch (req) {
-			case index:
-				responseContent.append(index());
-				break;
-			case Logon:
-				responseContent.append(index());
-				break;
-			case System:
-				responseContent.append(System());
-				break;
-			default:
-				responseContent.append(index());
-				break;
-		}
-		writeResponse(e.getChannel());
-	}
+    private void getParams() {
+        if (request.getMethod() == HttpMethod.GET) {
+            params = null;
+        } else if (request.getMethod() == HttpMethod.POST) {
+            ChannelBuffer content = request.getContent();
+            if (content.readable()) {
+                String param = content.toString(WaarpStringUtils.UTF8);
+                QueryStringDecoder queryStringDecoder2 = new QueryStringDecoder("/?" + param);
+                params = queryStringDecoder2.getParameters();
+            } else {
+                params = null;
+            }
+        }
+    }
 
-	private void checkSession(Channel channel) {
-		String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
-		if (cookieString != null) {
-			CookieDecoder cookieDecoder = new CookieDecoder();
-			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-			if (!cookies.isEmpty()) {
-				for (Cookie elt : cookies) {
-					if (elt.getName().equalsIgnoreCase(R66SESSION)) {
-						logger.debug("Found session: "+elt);
-						admin = elt;
-						R66Session session = sessions.get(admin.getValue());
-						if (session != null) {
-							authentHttp = session;
-							authentHttp.setStatus(73);
-						} else {
-							admin = null;
-							continue;
-						}
-					} else if (elt.getName().equalsIgnoreCase(I18NEXT)) {
-						logger.debug("Found i18next: "+elt);
-						lang = elt.getValue();
-					}
-				}
-			}
-		}
-		if (admin == null) {
-			logger.debug("NoSession: " + uriRequest + ":{}", admin);
-		}
-	}
+    private void clearSession() {
+        if (admin != null) {
+            R66Session lsession = sessions.remove(admin.getValue());
+            admin = null;
+            if (lsession != null) {
+                lsession.setStatus(75);
+                lsession.clear();
+            }
+        }
+    }
 
-	private void handleCookies(HttpResponse response) {
-		String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
-		boolean i18nextFound = false;
-		if (cookieString != null) {
-			CookieDecoder cookieDecoder = new CookieDecoder();
-			Set<Cookie> cookies = cookieDecoder.decode(cookieString);
-			if (!cookies.isEmpty()) {
-				// Reset the sessions if necessary.
-				CookieEncoder cookieEncoder = new CookieEncoder(true);
-				boolean findSession = false;
-				for (Cookie cookie : cookies) {
-					if (cookie.getName().equalsIgnoreCase(R66SESSION)) {
-						if (newSession) {
-							findSession = false;
-						} else {
-							findSession = true;
-							cookieEncoder.addCookie(cookie);
-							response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-							cookieEncoder = new CookieEncoder(true);
-						}
-					} else if (cookie.getName().equalsIgnoreCase(I18NEXT)) {
-						i18nextFound = true;
-						cookie.setValue(lang);
-						cookieEncoder.addCookie(cookie);
-						response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-						cookieEncoder = new CookieEncoder(true);
-					} else {
-						cookieEncoder.addCookie(cookie);
-						response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-						cookieEncoder = new CookieEncoder(true);
-					}
-				}
-				if (! i18nextFound) {
-					Cookie cookie = new DefaultCookie(I18NEXT, lang);
-					cookieEncoder.addCookie(cookie);
-					response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-					cookieEncoder = new CookieEncoder(true);
-				}
-				newSession = false;
-				if (!findSession) {
-					if (admin != null) {
-						cookieEncoder.addCookie(admin);
-						response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-						logger.debug("AddSession: " + uriRequest + ":{}", admin);
-					}
-				}
-			}
-		} else {
-			CookieEncoder cookieEncoder = new CookieEncoder(true);
-			Cookie cookie = new DefaultCookie(I18NEXT, lang);
-			cookieEncoder.addCookie(cookie);
-			response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-			if (admin != null) {
-				cookieEncoder = new CookieEncoder(true);
-				cookieEncoder.addCookie(admin);
-				logger.debug("AddSession: " + uriRequest + ":{}", admin);
-				response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-			}
-		}
-	}
+    private void checkAuthent(MessageEvent e) {
+        newSession = true;
+        if (request.getMethod() == HttpMethod.GET) {
+            String logon = Logon();
+            responseContent.append(logon);
+            clearSession();
+            writeResponse(e.getChannel());
+            return;
+        } else if (request.getMethod() == HttpMethod.POST) {
+            getParams();
+            if (params == null) {
+                String logon = Logon();
+                responseContent.append(logon);
+                clearSession();
+                writeResponse(e.getChannel());
+                return;
+            }
+        }
+        boolean getMenu = false;
+        if (params.containsKey("Logon")) {
+            String name = null, password = null;
+            List<String> values = null;
+            if (!params.isEmpty()) {
+                // get values
+                if (params.containsKey("name")) {
+                    values = params.get("name");
+                    if (values != null) {
+                        name = values.get(0);
+                        if (name == null || name.isEmpty()) {
+                            getMenu = true;
+                        }
+                    }
+                } else {
+                    getMenu = true;
+                }
+                // search the nb param
+                if ((!getMenu) && params.containsKey("passwd")) {
+                    values = params.get("passwd");
+                    if (values != null) {
+                        password = values.get(0);
+                        if (password == null || password.isEmpty()) {
+                            getMenu = true;
+                        } else {
+                            getMenu = false;
+                        }
+                    } else {
+                        getMenu = true;
+                    }
+                } else {
+                    getMenu = true;
+                }
+            } else {
+                getMenu = true;
+            }
+            if (!getMenu) {
+                logger.debug("Name=" + name + " vs "
+                        + name.equals(Configuration.configuration.ADMINNAME) +
+                        " Passwd vs " + Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
+                                Configuration.configuration.getSERVERADMINKEY()));
+                if (name.equals(Configuration.configuration.ADMINNAME) &&
+                        Arrays.equals(password.getBytes(WaarpStringUtils.UTF8),
+                                Configuration.configuration.getSERVERADMINKEY())) {
+                    authentHttp.getAuth().specialNoSessionAuth(true,
+                            Configuration.configuration.HOST_ID);
+                    authentHttp.setStatus(70);
+                } else {
+                    getMenu = true;
+                }
+                if (!authentHttp.isAuthenticated()) {
+                    authentHttp.setStatus(71);
+                    logger.debug("Still not authenticated: {}", authentHttp);
+                    getMenu = true;
+                }
+            }
+        } else {
+            getMenu = true;
+        }
+        if (getMenu) {
+            String logon = Logon();
+            responseContent.append(logon);
+            clearSession();
+            writeResponse(e.getChannel());
+        } else {
+            String index = index();
+            responseContent.append(index);
+            clearSession();
+            admin = new DefaultCookie(R66SESSION, Configuration.configuration.HOST_ID +
+                    Long.toHexString(random.nextLong()));
+            sessions.put(admin.getValue(), this.authentHttp);
+            authentHttp.setStatus(72);
+            logger.debug("CreateSession: " + uriRequest + ":{}", admin);
+            writeResponse(e.getChannel());
+        }
+    }
 
-	/**
-	 * Write the response
-	 * 
-	 * @param e
-	 */
-	private void writeResponse(Channel channel) {
-		// Convert the response content to a ChannelBuffer.
-		ChannelBuffer buf = ChannelBuffers.copiedBuffer(responseContent.toString(),
-				WaarpStringUtils.UTF8);
-		responseContent.setLength(0);
+    @Override
+    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+        HttpRequest request = this.request = (HttpRequest) e.getMessage();
+        queryStringDecoder = new QueryStringDecoder(request.getUri());
+        uriRequest = queryStringDecoder.getPath();
+        logger.debug("Msg: " + uriRequest);
+        if (uriRequest.contains("gre/") || uriRequest.contains("img/") ||
+                uriRequest.contains("res/") || uriRequest.contains("favicon.ico")) {
+            HttpWriteCacheEnable.writeFile(request,
+                    e.getChannel(), Configuration.configuration.httpBasePath + uriRequest,
+                    R66SESSION);
+            return;
+        }
+        checkSession(e.getChannel());
+        if (!authentHttp.isAuthenticated()) {
+            logger.debug("Not Authent: " + uriRequest + ":{}", authentHttp);
+            checkAuthent(e);
+            return;
+        }
+        String find = uriRequest;
+        if (uriRequest.charAt(0) == '/') {
+            find = uriRequest.substring(1);
+        }
+        find = find.substring(0, find.indexOf("."));
+        REQUEST req = REQUEST.index;
+        try {
+            req = REQUEST.valueOf(find);
+        } catch (IllegalArgumentException e1) {
+            req = REQUEST.index;
+            logger.debug("NotFound: " + find + ":" + uriRequest);
+        }
+        switch (req) {
+            case index:
+                responseContent.append(index());
+                break;
+            case Logon:
+                responseContent.append(index());
+                break;
+            case System:
+                responseContent.append(System());
+                break;
+            default:
+                responseContent.append(index());
+                break;
+        }
+        writeResponse(e.getChannel());
+    }
 
-		// Decide whether to close the connection or not.
-		boolean keepAlive = HttpHeaders.isKeepAlive(request);
-		boolean close = HttpHeaders.Values.CLOSE.equalsIgnoreCase(request
-				.headers().get(HttpHeaders.Names.CONNECTION)) ||
-				(!keepAlive) || forceClose;
+    private void checkSession(Channel channel) {
+        String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
+        if (cookieString != null) {
+            CookieDecoder cookieDecoder = new CookieDecoder();
+            Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+            if (!cookies.isEmpty()) {
+                for (Cookie elt : cookies) {
+                    if (elt.getName().equalsIgnoreCase(R66SESSION)) {
+                        logger.debug("Found session: " + elt);
+                        admin = elt;
+                        R66Session session = sessions.get(admin.getValue());
+                        if (session != null) {
+                            authentHttp = session;
+                            authentHttp.setStatus(73);
+                        } else {
+                            admin = null;
+                            continue;
+                        }
+                    } else if (elt.getName().equalsIgnoreCase(I18NEXT)) {
+                        logger.debug("Found i18next: " + elt);
+                        lang = elt.getValue();
+                    }
+                }
+            }
+        }
+        if (admin == null) {
+            logger.debug("NoSession: " + uriRequest + ":{}", admin);
+        }
+    }
 
-		// Build the response object.
-		HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-		response.setContent(buf);
-		response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html");
-		if (keepAlive) {
-			response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-		}
-		if (!close) {
-			// There's no need to add 'Content-Length' header
-			// if this is the last response.
-			response.headers().set(HttpHeaders.Names.CONTENT_LENGTH,
-					String.valueOf(buf.readableBytes()));
-		}
+    private void handleCookies(HttpResponse response) {
+        String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
+        boolean i18nextFound = false;
+        if (cookieString != null) {
+            CookieDecoder cookieDecoder = new CookieDecoder();
+            Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+            if (!cookies.isEmpty()) {
+                // Reset the sessions if necessary.
+                CookieEncoder cookieEncoder = new CookieEncoder(true);
+                boolean findSession = false;
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equalsIgnoreCase(R66SESSION)) {
+                        if (newSession) {
+                            findSession = false;
+                        } else {
+                            findSession = true;
+                            cookieEncoder.addCookie(cookie);
+                            response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                            cookieEncoder = new CookieEncoder(true);
+                        }
+                    } else if (cookie.getName().equalsIgnoreCase(I18NEXT)) {
+                        i18nextFound = true;
+                        cookie.setValue(lang);
+                        cookieEncoder.addCookie(cookie);
+                        response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                        cookieEncoder = new CookieEncoder(true);
+                    } else {
+                        cookieEncoder.addCookie(cookie);
+                        response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                        cookieEncoder = new CookieEncoder(true);
+                    }
+                }
+                if (!i18nextFound) {
+                    Cookie cookie = new DefaultCookie(I18NEXT, lang);
+                    cookieEncoder.addCookie(cookie);
+                    response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                    cookieEncoder = new CookieEncoder(true);
+                }
+                newSession = false;
+                if (!findSession) {
+                    if (admin != null) {
+                        cookieEncoder.addCookie(admin);
+                        response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                        logger.debug("AddSession: " + uriRequest + ":{}", admin);
+                    }
+                }
+            }
+        } else {
+            CookieEncoder cookieEncoder = new CookieEncoder(true);
+            Cookie cookie = new DefaultCookie(I18NEXT, lang);
+            cookieEncoder.addCookie(cookie);
+            response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+            if (admin != null) {
+                cookieEncoder = new CookieEncoder(true);
+                cookieEncoder.addCookie(admin);
+                logger.debug("AddSession: " + uriRequest + ":{}", admin);
+                response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+            }
+        }
+    }
 
-		handleCookies(response);
+    /**
+     * Write the response
+     * 
+     * @param e
+     */
+    private void writeResponse(Channel channel) {
+        // Convert the response content to a ChannelBuffer.
+        ChannelBuffer buf = ChannelBuffers.copiedBuffer(responseContent.toString(),
+                WaarpStringUtils.UTF8);
+        responseContent.setLength(0);
 
-		// Write the response.
-		ChannelFuture future = channel.write(response);
-		// Close the connection after the write operation is done if necessary.
-		if (close) {
-			future.addListener(WaarpSslUtility.SSLCLOSE);
-		}
-		if (shutdown) {
-			ChannelUtils.startShutdown();
-		}
-	}
+        // Decide whether to close the connection or not.
+        boolean keepAlive = HttpHeaders.isKeepAlive(request);
+        boolean close = HttpHeaders.Values.CLOSE.equalsIgnoreCase(request
+                .headers().get(HttpHeaders.Names.CONNECTION)) ||
+                (!keepAlive) || forceClose;
 
-	/**
-	 * Send an error and close
-	 * 
-	 * @param ctx
-	 * @param status
-	 */
-	private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
-		HttpResponse response = new DefaultHttpResponse(
-				HttpVersion.HTTP_1_1, status);
-		response.headers().set(
-				HttpHeaders.Names.CONTENT_TYPE, "text/html");
-		responseContent.setLength(0);
-		responseContent.append(error(status.toString()));
-		response.setContent(ChannelBuffers.copiedBuffer(responseContent.toString(),
-				WaarpStringUtils.UTF8));
-		clearSession();
-		// Close the connection as soon as the error message is sent.
-		ctx.getChannel().write(response).addListener(WaarpSslUtility.SSLCLOSE);
-	}
+        // Build the response object.
+        HttpResponse response = new DefaultHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        response.setContent(buf);
+        response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html");
+        if (keepAlive) {
+            response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        }
+        if (!close) {
+            // There's no need to add 'Content-Length' header
+            // if this is the last response.
+            response.headers().set(HttpHeaders.Names.CONTENT_LENGTH,
+                    String.valueOf(buf.readableBytes()));
+        }
 
-	@Override
-	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
-			throws Exception {
-		OpenR66Exception exception = OpenR66ExceptionTrappedFactory
-				.getExceptionFromTrappedException(e.getChannel(), e);
-		if (exception != null) {
-			if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
-				if (e.getCause() instanceof IOException) {
-					// Nothing to do
-					return;
-				}
-				logger.warn("Exception in HttpSslHandler {}", exception.getMessage());
-			}
-			if (e.getChannel().isConnected()) {
-				sendError(ctx, HttpResponseStatus.BAD_REQUEST);
-			}
-		} else {
-			// Nothing to do
-			return;
-		}
-	}
+        handleCookies(response);
 
-	/*
-	 * (non-Javadoc)
-	 * @see
-	 * org.jboss.netty.channel.SimpleChannelUpstreamHandler#channelOpen(org.jboss.netty.channel.
-	 * ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
-	 */
-	@Override
-	public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		Channel channel = e.getChannel();
-		Configuration.configuration.getHttpChannelGroup().add(channel);
-		super.channelOpen(ctx, e);
-	}
+        // Write the response.
+        ChannelFuture future = channel.write(response);
+        // Close the connection after the write operation is done if necessary.
+        if (close) {
+            future.addListener(WaarpSslUtility.SSLCLOSE);
+        }
+        if (shutdown) {
+            ChannelUtils.startShutdown();
+        }
+    }
+
+    /**
+     * Send an error and close
+     * 
+     * @param ctx
+     * @param status
+     */
+    private void sendError(ChannelHandlerContext ctx, HttpResponseStatus status) {
+        HttpResponse response = new DefaultHttpResponse(
+                HttpVersion.HTTP_1_1, status);
+        response.headers().set(
+                HttpHeaders.Names.CONTENT_TYPE, "text/html");
+        responseContent.setLength(0);
+        responseContent.append(error(status.toString()));
+        response.setContent(ChannelBuffers.copiedBuffer(responseContent.toString(),
+                WaarpStringUtils.UTF8));
+        clearSession();
+        // Close the connection as soon as the error message is sent.
+        ctx.getChannel().write(response).addListener(WaarpSslUtility.SSLCLOSE);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
+            throws Exception {
+        OpenR66Exception exception = OpenR66ExceptionTrappedFactory
+                .getExceptionFromTrappedException(e.getChannel(), e);
+        if (exception != null) {
+            if (!(exception instanceof OpenR66ProtocolBusinessNoWriteBackException)) {
+                if (e.getCause() instanceof IOException) {
+                    // Nothing to do
+                    return;
+                }
+                logger.warn("Exception in HttpSslHandler {}", exception.getMessage());
+            }
+            if (e.getChannel().isConnected()) {
+                sendError(ctx, HttpResponseStatus.BAD_REQUEST);
+            }
+        } else {
+            // Nothing to do
+            return;
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.jboss.netty.channel.SimpleChannelUpstreamHandler#channelOpen(org.jboss.netty.channel.
+     * ChannelHandlerContext, org.jboss.netty.channel.ChannelStateEvent)
+     */
+    @Override
+    public void channelOpen(ChannelHandlerContext ctx, ChannelStateEvent e)
+            throws Exception {
+        Channel channel = e.getChannel();
+        Configuration.configuration.getHttpChannelGroup().add(channel);
+        super.channelOpen(ctx, e);
+    }
 }

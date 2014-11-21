@@ -28,74 +28,73 @@ import org.waarp.openr66.proxy.configuration.Configuration;
  * 
  */
 public class ProxyBridge {
-	public static NetworkTransaction transaction = null;
+    public static NetworkTransaction transaction = null;
 
-	private ProxyEntry proxyEntry;
-	private NetworkServerHandler source;
-	private NetworkServerHandler proxified;
-	private R66Future futureRemoteConnected = new R66Future(true);
+    private ProxyEntry proxyEntry;
+    private NetworkServerHandler source;
+    private NetworkServerHandler proxified;
+    private R66Future futureRemoteConnected = new R66Future(true);
 
-	public static void initialize() {
-		transaction = new NetworkTransaction();
-	}
+    public static void initialize() {
+        transaction = new NetworkTransaction();
+    }
 
-	/**
-	 * @param proxyEntry
-	 * @param source
-	 */
-	public ProxyBridge(ProxyEntry proxyEntry, NetworkServerHandler source) {
-		this.proxyEntry = proxyEntry;
-		this.source = source;
-	}
+    /**
+     * @param proxyEntry
+     * @param source
+     */
+    public ProxyBridge(ProxyEntry proxyEntry, NetworkServerHandler source) {
+        this.proxyEntry = proxyEntry;
+        this.source = source;
+    }
 
-	public void initializeProxy() {
-		Channel proxy = transaction.createConnectionWithRetry(proxyEntry.getRemoteSocketAddress(),
-				proxyEntry.isRemoteSsl());
-		if (proxy == null) {
-			// Can't connect ?
-			this.futureRemoteConnected.cancel();
-			return;
-		}
-		this.proxified =
-				(NetworkServerHandler) proxy.getPipeline()
-						.get(NetworkServerPipelineFactory.HANDLER);
-		this.proxified.setBridge(this);
-	}
+    public void initializeProxy() {
+        Channel proxy = transaction.createConnectionWithRetry(proxyEntry.getRemoteSocketAddress(),
+                proxyEntry.isRemoteSsl());
+        if (proxy == null) {
+            // Can't connect ?
+            this.futureRemoteConnected.cancel();
+            return;
+        }
+        this.proxified =
+                (NetworkServerHandler) proxy.getPipeline()
+                        .get(NetworkServerPipelineFactory.HANDLER);
+        this.proxified.setBridge(this);
+    }
 
-	public void remoteConnected() {
-		this.futureRemoteConnected.setSuccess();
-	}
+    public void remoteConnected() {
+        this.futureRemoteConnected.setSuccess();
+    }
 
-	public boolean waitForRemoteConnection() {
-		try {
-			this.futureRemoteConnected.await(Configuration.configuration.TIMEOUTCON);
-		} catch (InterruptedException e) {
-		}
-		if (!this.futureRemoteConnected.isSuccess()) {
-			this.futureRemoteConnected.cancel();
-			return false;
-		}
-		return true;
-	}
+    public boolean waitForRemoteConnection() {
+        try {
+            this.futureRemoteConnected.await(Configuration.configuration.TIMEOUTCON);
+        } catch (InterruptedException e) {}
+        if (!this.futureRemoteConnected.isSuccess()) {
+            this.futureRemoteConnected.cancel();
+            return false;
+        }
+        return true;
+    }
 
-	/**
-	 * @return the proxyEntry
-	 */
-	public ProxyEntry getProxyEntry() {
-		return proxyEntry;
-	}
+    /**
+     * @return the proxyEntry
+     */
+    public ProxyEntry getProxyEntry() {
+        return proxyEntry;
+    }
 
-	/**
-	 * @return the source
-	 */
-	public NetworkServerHandler getSource() {
-		return source;
-	}
+    /**
+     * @return the source
+     */
+    public NetworkServerHandler getSource() {
+        return source;
+    }
 
-	/**
-	 * @return the proxified
-	 */
-	public NetworkServerHandler getProxified() {
-		return proxified;
-	}
+    /**
+     * @return the proxified
+     */
+    public NetworkServerHandler getProxified() {
+        return proxified;
+    }
 }

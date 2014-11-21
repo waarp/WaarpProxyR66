@@ -39,67 +39,67 @@ import org.waarp.openr66.protocol.utils.ChannelUtils;
  * @author Frederic Bregier
  */
 public class NetworkPacketCodec extends FrameDecoder implements
-		ChannelDownstreamHandler {
-	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel,
-			ChannelBuffer buf) throws Exception {
-		// Make sure if the length field was received.
-		if (buf.readableBytes() < 4) {
-			// The length field was not received yet - return null.
-			// This method will be invoked again when more packets are
-			// received and appended to the buffer.
-			return null;
-		}
-		// Mark the current buffer position
-		buf.markReaderIndex();
-		// Read the length field
-		final int length = buf.readInt();
-		if (buf.readableBytes() < length) {
-			buf.resetReaderIndex();
-			return null;
-		}
-		// Now we can read the two Ids
-		// Slight change in Proxy = first is remote and second is local!
-		final int remoteId = buf.readInt();
-		final int localId = buf.readInt();
-		final byte code = buf.readByte();
-		int readerInder = buf.readerIndex();
-		ChannelBuffer buffer = buf.slice(readerInder, length - 9);
-		buf.skipBytes(length - 9);
-		NetworkPacket networkPacket = new NetworkPacket(localId, remoteId, code, buffer);
-		if (code == LocalPacketFactory.KEEPALIVEPACKET) {
-			KeepAlivePacket keepAlivePacket = (KeepAlivePacket)
-					LocalPacketCodec.decodeNetworkPacket(networkPacket.getBuffer());
-			if (keepAlivePacket.isToValidate()) {
-				keepAlivePacket.validate();
-				NetworkPacket response =
-						new NetworkPacket(ChannelUtils.NOCHANNEL,
-								ChannelUtils.NOCHANNEL, keepAlivePacket, null);
-				Channels.write(channel, response);
-			}
-			// Replaced by a NoOp packet
-			networkPacket = new NetworkPacket(localId, remoteId, new NoOpPacket(), null);
-			NetworkServerHandler nsh = (NetworkServerHandler) ctx.getPipeline().getLast();
-			nsh.setKeepAlivedSent();
-		}
-		return networkPacket;
-	}
+        ChannelDownstreamHandler {
+    @Override
+    protected Object decode(ChannelHandlerContext ctx, Channel channel,
+            ChannelBuffer buf) throws Exception {
+        // Make sure if the length field was received.
+        if (buf.readableBytes() < 4) {
+            // The length field was not received yet - return null.
+            // This method will be invoked again when more packets are
+            // received and appended to the buffer.
+            return null;
+        }
+        // Mark the current buffer position
+        buf.markReaderIndex();
+        // Read the length field
+        final int length = buf.readInt();
+        if (buf.readableBytes() < length) {
+            buf.resetReaderIndex();
+            return null;
+        }
+        // Now we can read the two Ids
+        // Slight change in Proxy = first is remote and second is local!
+        final int remoteId = buf.readInt();
+        final int localId = buf.readInt();
+        final byte code = buf.readByte();
+        int readerInder = buf.readerIndex();
+        ChannelBuffer buffer = buf.slice(readerInder, length - 9);
+        buf.skipBytes(length - 9);
+        NetworkPacket networkPacket = new NetworkPacket(localId, remoteId, code, buffer);
+        if (code == LocalPacketFactory.KEEPALIVEPACKET) {
+            KeepAlivePacket keepAlivePacket = (KeepAlivePacket)
+                    LocalPacketCodec.decodeNetworkPacket(networkPacket.getBuffer());
+            if (keepAlivePacket.isToValidate()) {
+                keepAlivePacket.validate();
+                NetworkPacket response =
+                        new NetworkPacket(ChannelUtils.NOCHANNEL,
+                                ChannelUtils.NOCHANNEL, keepAlivePacket, null);
+                Channels.write(channel, response);
+            }
+            // Replaced by a NoOp packet
+            networkPacket = new NetworkPacket(localId, remoteId, new NoOpPacket(), null);
+            NetworkServerHandler nsh = (NetworkServerHandler) ctx.getPipeline().getLast();
+            nsh.setKeepAlivedSent();
+        }
+        return networkPacket;
+    }
 
-	public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
-			throws Exception {
-		if (e instanceof MessageEvent) {
-			final MessageEvent evt = (MessageEvent) e;
-			Object msg = evt.getMessage();
-			if (!(msg instanceof NetworkPacket)) {
-				throw new InvalidArgumentException("Incorrect write object: " +
-						msg.getClass().getName());
-			}
-			final NetworkPacket packet = (NetworkPacket) msg;
-			final ChannelBuffer finalBuf = packet.getNetworkPacket();
-			Channels.write(ctx, evt.getFuture(), finalBuf);
-		} else {
-			ctx.sendDownstream(e);
-		}
-	}
+    public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e)
+            throws Exception {
+        if (e instanceof MessageEvent) {
+            final MessageEvent evt = (MessageEvent) e;
+            Object msg = evt.getMessage();
+            if (!(msg instanceof NetworkPacket)) {
+                throw new InvalidArgumentException("Incorrect write object: " +
+                        msg.getClass().getName());
+            }
+            final NetworkPacket packet = (NetworkPacket) msg;
+            final ChannelBuffer finalBuf = packet.getNetworkPacket();
+            Channels.write(ctx, evt.getFuture(), finalBuf);
+        } else {
+            ctx.sendDownstream(e);
+        }
+    }
 
 }
