@@ -168,9 +168,11 @@ public class HttpSslHandler extends SimpleChannelInboundHandler<FullHttpRequest>
         TrafficCounter trafficCounter =
                 Configuration.configuration.getGlobalTrafficShapingHandler().trafficCounter();
         WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
-                Messages.getString("HttpSslHandler.IN") + (trafficCounter.lastReadThroughput() >> 17) + //$NON-NLS-1$
-                        Messages.getString("HttpSslHandler.OUT") + //$NON-NLS-1$
-                        (trafficCounter.lastWriteThroughput() >> 17) + "Mbits");
+                Messages.getString("HttpSslHandler.IN") + (trafficCounter.lastReadThroughput() >> 20) + //$NON-NLS-1$
+                Messages.getString("HttpSslHandler.MOPS") + //$NON-NLS-1$
+                Messages.getString("HttpSslHandler.OUT") + //$NON-NLS-1$
+                (trafficCounter.lastWriteThroughput() >> 20) +
+                Messages.getString("HttpSslHandler.MOPS")); //$NON-NLS-1$
         WaarpStringUtils.replace(builder, REPLACEMENT.XXXLANGXXX.toString(), lang);
         return builder.toString();
     }
