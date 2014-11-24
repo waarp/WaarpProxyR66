@@ -217,9 +217,10 @@
 	          <windowtitle>${project.name} ${project.version} API Reference</windowtitle>
 	          <additionalparam>
 	            -link http://java.sun.com/javase/6/docs/api/
-	            -link http://static.netty.io/3.5/api/
 
 				-group "Waarp R66 Proxy package" "org.waarp.openr66.proxy*"
+
+                -group "Extra Netty patch package" "io.netty*"
 
 	            -sourceclasspath ${basedir}/target/classes
 	          </additionalparam>
