@@ -1,5 +1,3 @@
-io.netty.channel
-io.netty.handler.traffic
 org.waarp.openr66.proxy
 org.waarp.openr66.proxy.configuration
 org.waarp.openr66.proxy.network
