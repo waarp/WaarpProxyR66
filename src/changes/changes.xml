@@ -5,6 +5,9 @@
 		<author email="waarp1 at free.fr">Frederic Bregier</author>
 	</properties>
 	<body>
+        <release version="1.0.12" date="2015-05-25" description="Fix release">
+            <action dev="Frederic Bregier" type="fix">Fix after upgrading dependencies</action>
+        </release>
         <release version="1.0.11" date="2014-12-01" description="Fix release">
             <action dev="Frederic Bregier" type="fix">Fix issue on Netty 3.9.4 with GlobalTrafficShaping</action>
             <action dev="Frederic Bregier" type="fix">Memory optimizations</action>

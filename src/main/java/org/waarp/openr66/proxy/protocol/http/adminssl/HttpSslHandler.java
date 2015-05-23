@@ -35,10 +35,6 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.Cookie;
-import org.jboss.netty.handler.codec.http.CookieDecoder;
-import org.jboss.netty.handler.codec.http.CookieEncoder;
-import org.jboss.netty.handler.codec.http.DefaultCookie;
 import org.jboss.netty.handler.codec.http.DefaultHttpResponse;
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
@@ -47,6 +43,10 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.codec.http.QueryStringDecoder;
+import org.jboss.netty.handler.codec.http.cookie.Cookie;
+import org.jboss.netty.handler.codec.http.cookie.DefaultCookie;
+import org.jboss.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import org.jboss.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import org.jboss.netty.handler.traffic.TrafficCounter;
 import org.waarp.common.crypto.ssl.WaarpSslUtility;
 import org.waarp.common.exception.FileTransferException;
@@ -419,7 +419,7 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
 
     private void clearSession() {
         if (admin != null) {
-            R66Session lsession = sessions.remove(admin.getValue());
+            R66Session lsession = sessions.remove(admin.value());
             admin = null;
             if (lsession != null) {
                 lsession.setStatus(75);
@@ -516,7 +516,7 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
             clearSession();
             admin = new DefaultCookie(R66SESSION, Configuration.configuration.HOST_ID +
                     Long.toHexString(random.nextLong()));
-            sessions.put(admin.getValue(), this.authentHttp);
+            sessions.put(admin.value(), this.authentHttp);
             authentHttp.setStatus(72);
             logger.debug("CreateSession: " + uriRequest + ":{}", admin);
             writeResponse(e.getChannel());
@@ -574,14 +574,13 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
     private void checkSession(Channel channel) {
         String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
         if (cookieString != null) {
-            CookieDecoder cookieDecoder = new CookieDecoder();
-            Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+            Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
             if (!cookies.isEmpty()) {
                 for (Cookie elt : cookies) {
-                    if (elt.getName().equalsIgnoreCase(R66SESSION)) {
+                    if (elt.name().equalsIgnoreCase(R66SESSION)) {
                         logger.debug("Found session: " + elt);
                         admin = elt;
-                        R66Session session = sessions.get(admin.getValue());
+                        R66Session session = sessions.get(admin.value());
                         if (session != null) {
                             authentHttp = session;
                             authentHttp.setStatus(73);
@@ -589,9 +588,9 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
                             admin = null;
                             continue;
                         }
-                    } else if (elt.getName().equalsIgnoreCase(I18NEXT)) {
+                    } else if (elt.name().equalsIgnoreCase(I18NEXT)) {
                         logger.debug("Found i18next: " + elt);
-                        lang = elt.getValue();
+                        lang = elt.value();
                     }
                 }
             }
@@ -605,59 +604,44 @@ public class HttpSslHandler extends SimpleChannelUpstreamHandler {
         String cookieString = request.headers().get(HttpHeaders.Names.COOKIE);
         boolean i18nextFound = false;
         if (cookieString != null) {
-            CookieDecoder cookieDecoder = new CookieDecoder();
-            Set<Cookie> cookies = cookieDecoder.decode(cookieString);
+            Set<Cookie> cookies = ServerCookieDecoder.LAX.decode(cookieString);
             if (!cookies.isEmpty()) {
                 // Reset the sessions if necessary.
-                CookieEncoder cookieEncoder = new CookieEncoder(true);
                 boolean findSession = false;
                 for (Cookie cookie : cookies) {
-                    if (cookie.getName().equalsIgnoreCase(R66SESSION)) {
+                    if (cookie.name().equalsIgnoreCase(R66SESSION)) {
                         if (newSession) {
                             findSession = false;
                         } else {
                             findSession = true;
-                            cookieEncoder.addCookie(cookie);
-                            response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-                            cookieEncoder = new CookieEncoder(true);
+                            response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookie));
                         }
-                    } else if (cookie.getName().equalsIgnoreCase(I18NEXT)) {
+                    } else if (cookie.name().equalsIgnoreCase(I18NEXT)) {
                         i18nextFound = true;
                         cookie.setValue(lang);
-                        cookieEncoder.addCookie(cookie);
-                        response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-                        cookieEncoder = new CookieEncoder(true);
+                        response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookie));
                     } else {
-                        cookieEncoder.addCookie(cookie);
-                        response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-                        cookieEncoder = new CookieEncoder(true);
+                        response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookie));
                     }
                 }
                 if (!i18nextFound) {
                     Cookie cookie = new DefaultCookie(I18NEXT, lang);
-                    cookieEncoder.addCookie(cookie);
-                    response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
-                    cookieEncoder = new CookieEncoder(true);
+                    response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookie));
                 }
                 newSession = false;
                 if (!findSession) {
                     if (admin != null) {
-                        cookieEncoder.addCookie(admin);
-                        response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+                        response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(admin));
                         logger.debug("AddSession: " + uriRequest + ":{}", admin);
                     }
                 }
             }
         } else {
-            CookieEncoder cookieEncoder = new CookieEncoder(true);
             Cookie cookie = new DefaultCookie(I18NEXT, lang);
-            cookieEncoder.addCookie(cookie);
-            response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
+            response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(cookie));
             if (admin != null) {
-                cookieEncoder = new CookieEncoder(true);
-                cookieEncoder.addCookie(admin);
+                response.headers().add(HttpHeaders.Names.SET_COOKIE, ServerCookieEncoder.LAX.encode(admin));
                 logger.debug("AddSession: " + uriRequest + ":{}", admin);
-                response.headers().add(HttpHeaders.Names.SET_COOKIE, cookieEncoder.encode());
             }
         }
     }
