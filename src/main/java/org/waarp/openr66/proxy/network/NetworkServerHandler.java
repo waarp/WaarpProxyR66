@@ -156,7 +156,7 @@ public class NetworkServerHandler extends SimpleChannelInboundHandler<NetworkPac
                             + " proxyChannelId: " + this.proxyChannel.id() : "nobridge"));
         } else {
             try {
-                this.clientFuture.await(Configuration.configuration.TIMEOUTCON);
+                this.clientFuture.await(Configuration.configuration.getTIMEOUTCON());
             } catch (InterruptedException e1) {
             }
             if (this.bridge == null) {
@@ -171,7 +171,7 @@ public class NetworkServerHandler extends SimpleChannelInboundHandler<NetworkPac
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (Configuration.configuration.isShutdown)
+        if (Configuration.configuration.isShutdown())
             return;
         if (evt instanceof IdleStateEvent) {
             if (keepAlivedSent > 0) {
@@ -181,8 +181,8 @@ public class NetworkServerHandler extends SimpleChannelInboundHandler<NetworkPac
                     return;
                 }
                 logger.error("Not getting KAlive: closing channel");
-                if (Configuration.configuration.r66Mib != null) {
-                    Configuration.configuration.r66Mib.notifyWarning(
+                if (Configuration.configuration.getR66Mib() != null) {
+                    Configuration.configuration.getR66Mib().notifyWarning(
                             "KeepAlive get no answer", "Closing network connection");
                 }
                 ChannelCloseTimer.closeFutureChannel(ctx.channel());

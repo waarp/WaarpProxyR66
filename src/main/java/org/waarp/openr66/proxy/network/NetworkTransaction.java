@@ -62,16 +62,16 @@ public class NetworkTransaction {
         NetworkServerInitializer networkServerInitializer = new NetworkServerInitializer(false);
         clientBootstrap = new Bootstrap();
         WaarpNettyUtil.setBootstrap(clientBootstrap, Configuration.configuration.getNetworkWorkerGroup(),
-                (int) Configuration.configuration.TIMEOUTCON);
+                (int) Configuration.configuration.getTIMEOUTCON());
         clientBootstrap.handler(networkServerInitializer);
         clientSslBootstrap = new Bootstrap();
-        if (Configuration.configuration.useSSL && Configuration.configuration.HOST_SSLID != null) {
+        if (Configuration.configuration.isUseSSL() && Configuration.configuration.getHOST_SSLID() != null) {
             NetworkSslServerInitializer networkSslServerInitializer = new NetworkSslServerInitializer(true);
             WaarpNettyUtil.setBootstrap(clientSslBootstrap, Configuration.configuration.getNetworkWorkerGroup(),
-                    (int) Configuration.configuration.TIMEOUTCON);
+                    (int) Configuration.configuration.getTIMEOUTCON());
             clientSslBootstrap.handler(networkSslServerInitializer);
         } else {
-            if (Configuration.configuration.warnOnStartup) {
+            if (Configuration.configuration.isWarnOnStartup()) {
                 logger.warn("No SSL support configured");
             } else {
                 logger.info("No SSL support configured");
@@ -140,7 +140,7 @@ public class NetworkTransaction {
         // check valid limit on server side only (could be the initiator but not a client)
         boolean valid = false;
         for (int i = 0; i < Configuration.RETRYNB * 2; i++) {
-            if (Configuration.configuration.constraintLimitHandler.checkConstraintsSleep(i)) {
+            if (Configuration.configuration.getConstraintLimitHandler().checkConstraintsSleep(i)) {
                 logger.debug("Constraints exceeded: " + i);
             } else {
                 logger.debug("Constraints NOT exceeded");
@@ -187,7 +187,7 @@ public class NetworkTransaction {
         for (int i = 0; i < Configuration.RETRYNB; i++) {
             try {
                 if (isSSL) {
-                    if (Configuration.configuration.HOST_SSLID != null) {
+                    if (Configuration.configuration.getHOST_SSLID() != null) {
                         channelFuture = clientSslBootstrap.connect(socketServerAddress);
                     } else {
                         throw new OpenR66ProtocolNoConnectionException("No SSL support");
@@ -200,7 +200,7 @@ public class NetworkTransaction {
                         "Cannot connect to remote server due to a channel exception");
             }
             try {
-                channelFuture.await(Configuration.configuration.TIMEOUTCON / 3);
+                channelFuture.await(Configuration.configuration.getTIMEOUTCON() / 3);
             } catch (InterruptedException e1) {
             }
             if (channelFuture.isSuccess()) {
@@ -249,7 +249,7 @@ public class NetworkTransaction {
             Thread.sleep(Configuration.RETRYINMS * 2);
         } catch (InterruptedException e) {
         }
-        if (!Configuration.configuration.isServer) {
+        if (!Configuration.configuration.isServer()) {
             R66ShutdownHook.shutdownHook.launchFinalExit();
         }
         for (Channel channel : networkChannelGroup) {

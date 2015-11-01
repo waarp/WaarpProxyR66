@@ -44,12 +44,12 @@ public class R66Proxy {
         }
         Configuration.configuration = new Configuration();
         if (initialize(args[0])) {
-            logger.warn("Proxy OpenR66 starts for " + Configuration.configuration.HOST_ID);
-            System.err.println("Proxy OpenR66 starts for " + Configuration.configuration.HOST_ID);
+            logger.warn("Proxy OpenR66 starts for " + Configuration.configuration.getHOST_ID());
+            System.err.println("Proxy OpenR66 starts for " + Configuration.configuration.getHOST_ID());
         } else {
-            logger.error("Cannot start Proxy OpenR66 for " + Configuration.configuration.HOST_ID);
+            logger.error("Cannot start Proxy OpenR66 for " + Configuration.configuration.getHOST_ID());
             System.err.println("Cannot start Proxy OpenR66 for "
-                    + Configuration.configuration.HOST_ID);
+                    + Configuration.configuration.getHOST_ID());
             System.exit(1);
         }
     }
