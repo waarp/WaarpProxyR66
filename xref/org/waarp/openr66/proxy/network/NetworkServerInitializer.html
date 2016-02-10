@@ -52,7 +52,7 @@
 <a class="jxr_linenumber" name="L44" href="#L44">44</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> initChannel(SocketChannel ch) <strong class="jxr_keyword">throws</strong> Exception {
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>          <strong class="jxr_keyword">final</strong> ChannelPipeline pipeline = ch.pipeline();
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>          pipeline.addLast(<span class="jxr_string">"codec"</span>, <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/NetworkPacketCodec.html">NetworkPacketCodec</a>());
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>          pipeline.addLast(TIMEOUT, <strong class="jxr_keyword">new</strong> IdleStateHandler(0, 0, Configuration.configuration.TIMEOUTCON,
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>          pipeline.addLast(TIMEOUT, <strong class="jxr_keyword">new</strong> IdleStateHandler(0, 0, Configuration.configuration.getTIMEOUTCON(),
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>                  TimeUnit.MILLISECONDS));
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>          GlobalTrafficHandler handler =
 <a class="jxr_linenumber" name="L50" href="#L50">50</a>                  Configuration.configuration.getGlobalTrafficShapingHandler();
@@ -76,6 +76,6 @@
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>  }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2009&#x2013;2015 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2009&#x2013;2016 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
 </body>
 </html>

@@ -70,16 +70,16 @@
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>          <a href="../../../../../org/waarp/openr66/proxy/network/NetworkServerInitializer.html">NetworkServerInitializer</a> networkServerInitializer = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/NetworkServerInitializer.html">NetworkServerInitializer</a>(false);
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>          clientBootstrap = <strong class="jxr_keyword">new</strong> Bootstrap();
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>          WaarpNettyUtil.setBootstrap(clientBootstrap, Configuration.configuration.getNetworkWorkerGroup(),
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>                  (<strong class="jxr_keyword">int</strong>) Configuration.configuration.TIMEOUTCON);
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>                  (<strong class="jxr_keyword">int</strong>) Configuration.configuration.getTIMEOUTCON());
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>          clientBootstrap.handler(networkServerInitializer);
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>          clientSslBootstrap = <strong class="jxr_keyword">new</strong> Bootstrap();
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>          <strong class="jxr_keyword">if</strong> (Configuration.configuration.useSSL &amp;&amp; Configuration.configuration.HOST_SSLID != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>          <strong class="jxr_keyword">if</strong> (Configuration.configuration.isUseSSL() &amp;&amp; Configuration.configuration.getHOST_SSLID() != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>              <a href="../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerInitializer.html">NetworkSslServerInitializer</a> networkSslServerInitializer = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerInitializer.html">NetworkSslServerInitializer</a>(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>              WaarpNettyUtil.setBootstrap(clientSslBootstrap, Configuration.configuration.getNetworkWorkerGroup(),
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>                      (<strong class="jxr_keyword">int</strong>) Configuration.configuration.TIMEOUTCON);
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>                      (<strong class="jxr_keyword">int</strong>) Configuration.configuration.getTIMEOUTCON());
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>              clientSslBootstrap.handler(networkSslServerInitializer);
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>          } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>              <strong class="jxr_keyword">if</strong> (Configuration.configuration.warnOnStartup) {
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>              <strong class="jxr_keyword">if</strong> (Configuration.configuration.isWarnOnStartup()) {
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>                  logger.warn(<span class="jxr_string">"No SSL support configured"</span>);
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>              } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>                  logger.info(<span class="jxr_string">"No SSL support configured"</span>);
@@ -148,7 +148,7 @@
 <a class="jxr_linenumber" name="L140" href="#L140">140</a>         <em class="jxr_comment">// check valid limit on server side only (could be the initiator but not a client)</em>
 <a class="jxr_linenumber" name="L141" href="#L141">141</a>         <strong class="jxr_keyword">boolean</strong> valid = false;
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>         <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; Configuration.RETRYNB * 2; i++) {
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>             <strong class="jxr_keyword">if</strong> (Configuration.configuration.constraintLimitHandler.checkConstraintsSleep(i)) {
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>             <strong class="jxr_keyword">if</strong> (Configuration.configuration.getConstraintLimitHandler().checkConstraintsSleep(i)) {
 <a class="jxr_linenumber" name="L144" href="#L144">144</a>                 logger.debug(<span class="jxr_string">"Constraints exceeded: "</span> + i);
 <a class="jxr_linenumber" name="L145" href="#L145">145</a>             } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L146" href="#L146">146</a>                 logger.debug(<span class="jxr_string">"Constraints NOT exceeded"</span>);
@@ -195,7 +195,7 @@
 <a class="jxr_linenumber" name="L187" href="#L187">187</a>         <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> i = 0; i &lt; Configuration.RETRYNB; i++) {
 <a class="jxr_linenumber" name="L188" href="#L188">188</a>             <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L189" href="#L189">189</a>                 <strong class="jxr_keyword">if</strong> (isSSL) {
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>                     <strong class="jxr_keyword">if</strong> (Configuration.configuration.HOST_SSLID != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>                     <strong class="jxr_keyword">if</strong> (Configuration.configuration.getHOST_SSLID() != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L191" href="#L191">191</a>                         channelFuture = clientSslBootstrap.connect(socketServerAddress);
 <a class="jxr_linenumber" name="L192" href="#L192">192</a>                     } <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L193" href="#L193">193</a>                         <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> OpenR66ProtocolNoConnectionException(<span class="jxr_string">"No SSL support"</span>);
@@ -208,7 +208,7 @@
 <a class="jxr_linenumber" name="L200" href="#L200">200</a>                         <span class="jxr_string">"Cannot connect to remote server due to a channel exception"</span>);
 <a class="jxr_linenumber" name="L201" href="#L201">201</a>             }
 <a class="jxr_linenumber" name="L202" href="#L202">202</a>             <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L203" href="#L203">203</a>                 channelFuture.await(Configuration.configuration.TIMEOUTCON / 3);
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>                 channelFuture.await(Configuration.configuration.getTIMEOUTCON() / 3);
 <a class="jxr_linenumber" name="L204" href="#L204">204</a>             } <strong class="jxr_keyword">catch</strong> (InterruptedException e1) {
 <a class="jxr_linenumber" name="L205" href="#L205">205</a>             }
 <a class="jxr_linenumber" name="L206" href="#L206">206</a>             <strong class="jxr_keyword">if</strong> (channelFuture.isSuccess()) {
@@ -257,7 +257,7 @@
 <a class="jxr_linenumber" name="L249" href="#L249">249</a>             Thread.sleep(Configuration.RETRYINMS * 2);
 <a class="jxr_linenumber" name="L250" href="#L250">250</a>         } <strong class="jxr_keyword">catch</strong> (InterruptedException e) {
 <a class="jxr_linenumber" name="L251" href="#L251">251</a>         }
-<a class="jxr_linenumber" name="L252" href="#L252">252</a>         <strong class="jxr_keyword">if</strong> (!Configuration.configuration.isServer) {
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>         <strong class="jxr_keyword">if</strong> (!Configuration.configuration.isServer()) {
 <a class="jxr_linenumber" name="L253" href="#L253">253</a>             R66ShutdownHook.shutdownHook.launchFinalExit();
 <a class="jxr_linenumber" name="L254" href="#L254">254</a>         }
 <a class="jxr_linenumber" name="L255" href="#L255">255</a>         <strong class="jxr_keyword">for</strong> (Channel channel : networkChannelGroup) {
@@ -282,6 +282,6 @@
 <a class="jxr_linenumber" name="L274" href="#L274">274</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2009&#x2013;2015 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2009&#x2013;2016 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
 </body>
 </html>

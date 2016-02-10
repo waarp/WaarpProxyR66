@@ -113,17 +113,17 @@
 <a class="jxr_linenumber" name="L105" href="#L105">105</a> <em class="jxr_javadoccomment">         * @return the content of the unique file</em>
 <a class="jxr_linenumber" name="L106" href="#L106">106</a> <em class="jxr_javadoccomment">         */</em>
 <a class="jxr_linenumber" name="L107" href="#L107">107</a>         <strong class="jxr_keyword">public</strong> String readFileUnique(<a href="../../../../../../org/waarp/openr66/proxy/protocol/http/HttpFormattedHandler.html">HttpFormattedHandler</a> handler) {
-<a class="jxr_linenumber" name="L108" href="#L108">108</a>             <strong class="jxr_keyword">return</strong> handler.readFileHeader(Configuration.configuration.httpBasePath + <span class="jxr_string">"monitor/"</span>
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>             <strong class="jxr_keyword">return</strong> handler.readFileHeader(Configuration.configuration.getHttpBasePath() + <span class="jxr_string">"monitor/"</span>
 <a class="jxr_linenumber" name="L109" href="#L109">109</a>                     + <strong class="jxr_keyword">this</strong>.header);
 <a class="jxr_linenumber" name="L110" href="#L110">110</a>         }
 <a class="jxr_linenumber" name="L111" href="#L111">111</a> 
 <a class="jxr_linenumber" name="L112" href="#L112">112</a>         <strong class="jxr_keyword">public</strong> String readHeader(<a href="../../../../../../org/waarp/openr66/proxy/protocol/http/HttpFormattedHandler.html">HttpFormattedHandler</a> handler) {
-<a class="jxr_linenumber" name="L113" href="#L113">113</a>             <strong class="jxr_keyword">return</strong> handler.readFileHeader(Configuration.configuration.httpBasePath + <span class="jxr_string">"monitor/"</span>
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>             <strong class="jxr_keyword">return</strong> handler.readFileHeader(Configuration.configuration.getHttpBasePath() + <span class="jxr_string">"monitor/"</span>
 <a class="jxr_linenumber" name="L114" href="#L114">114</a>                     + <strong class="jxr_keyword">this</strong>.header);
 <a class="jxr_linenumber" name="L115" href="#L115">115</a>         }
 <a class="jxr_linenumber" name="L116" href="#L116">116</a> 
 <a class="jxr_linenumber" name="L117" href="#L117">117</a>         <strong class="jxr_keyword">public</strong> String readEnd() {
-<a class="jxr_linenumber" name="L118" href="#L118">118</a>             <strong class="jxr_keyword">return</strong> WaarpStringUtils.readFile(Configuration.configuration.httpBasePath + <span class="jxr_string">"monitor/"</span>
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>             <strong class="jxr_keyword">return</strong> WaarpStringUtils.readFile(Configuration.configuration.getHttpBasePath() + <span class="jxr_string">"monitor/"</span>
 <a class="jxr_linenumber" name="L119" href="#L119">119</a>                     + <strong class="jxr_keyword">this</strong>.end);
 <a class="jxr_linenumber" name="L120" href="#L120">120</a>         }
 <a class="jxr_linenumber" name="L121" href="#L121">121</a>     }
@@ -132,10 +132,10 @@
 <a class="jxr_linenumber" name="L124" href="#L124">124</a>         XXXHOSTIDXXX, XXXLOCACTIVEXXX, XXXNETACTIVEXXX, XXXBANDWIDTHXXX, XXXDATEXXX, XXXLANGXXX;
 <a class="jxr_linenumber" name="L125" href="#L125">125</a>     }
 <a class="jxr_linenumber" name="L126" href="#L126">126</a> 
-<a class="jxr_linenumber" name="L127" href="#L127">127</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> LIMITROW = 60; <em class="jxr_comment">// better if it can be divided by 4</em>
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>     <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> LIMITROW = 60; <em class="jxr_comment">// better if it can be divided by 4</em>
 <a class="jxr_linenumber" name="L128" href="#L128">128</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String I18NEXT = <span class="jxr_string">"i18next"</span>;
 <a class="jxr_linenumber" name="L129" href="#L129">129</a> 
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> R66Session authentHttp = <strong class="jxr_keyword">new</strong> R66Session();
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>     <strong class="jxr_keyword">final</strong> R66Session authentHttp = <strong class="jxr_keyword">new</strong> R66Session();
 <a class="jxr_linenumber" name="L131" href="#L131">131</a> 
 <a class="jxr_linenumber" name="L132" href="#L132">132</a>     <strong class="jxr_keyword">private</strong> FullHttpRequest request;
 <a class="jxr_linenumber" name="L133" href="#L133">133</a> 
@@ -145,7 +145,7 @@
 <a class="jxr_linenumber" name="L137" href="#L137">137</a> 
 <a class="jxr_linenumber" name="L138" href="#L138">138</a>     <strong class="jxr_keyword">private</strong> String uriRequest;
 <a class="jxr_linenumber" name="L139" href="#L139">139</a> 
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>     <strong class="jxr_keyword">private</strong> String lang = Messages.slocale;
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>     <strong class="jxr_keyword">private</strong> String lang = Messages.getSlocale();
 <a class="jxr_linenumber" name="L141" href="#L141">141</a> 
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> isCurrentRequestXml = false;
 <a class="jxr_linenumber" name="L143" href="#L143">143</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> isCurrentRequestJson = false;
@@ -176,7 +176,7 @@
 <a class="jxr_linenumber" name="L168" href="#L168">168</a>                         Configuration.configuration.getLocalTransaction().
 <a class="jxr_linenumber" name="L169" href="#L169">169</a>                                 getNumberLocalChannel()));
 <a class="jxr_linenumber" name="L170" href="#L170">170</a>         WaarpStringUtils.replace(builder, REPLACEMENT.XXXHOSTIDXXX.toString(),
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>                 Configuration.configuration.HOST_ID);
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>                 Configuration.configuration.getHOST_ID());
 <a class="jxr_linenumber" name="L172" href="#L172">172</a>         TrafficCounter trafficCounter =
 <a class="jxr_linenumber" name="L173" href="#L173">173</a>                 Configuration.configuration.getGlobalTrafficShapingHandler().trafficCounter();
 <a class="jxr_linenumber" name="L174" href="#L174">174</a>         WaarpStringUtils.replace(builder, REPLACEMENT.XXXBANDWIDTHXXX.toString(),
@@ -212,7 +212,7 @@
 <a class="jxr_linenumber" name="L204" href="#L204">204</a>         <strong class="jxr_keyword">if</strong> (uriRequest.contains(<span class="jxr_string">"gre/"</span>) || uriRequest.contains(<span class="jxr_string">"img/"</span>) ||
 <a class="jxr_linenumber" name="L205" href="#L205">205</a>                 uriRequest.contains(<span class="jxr_string">"res/"</span>) || uriRequest.contains(<span class="jxr_string">"favicon.ico"</span>)) {
 <a class="jxr_linenumber" name="L206" href="#L206">206</a>             HttpWriteCacheEnable.writeFile(request,
-<a class="jxr_linenumber" name="L207" href="#L207">207</a>                     ctx, Configuration.configuration.httpBasePath + uriRequest,
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>                     ctx, Configuration.configuration.getHttpBasePath() + uriRequest,
 <a class="jxr_linenumber" name="L208" href="#L208">208</a>                     <span class="jxr_string">"XYZR66NOSESSION"</span>);
 <a class="jxr_linenumber" name="L209" href="#L209">209</a>             <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L210" href="#L210">210</a>         }
@@ -264,13 +264,13 @@
 <a class="jxr_linenumber" name="L256" href="#L256">256</a> <em class="jxr_javadoccomment">     * @param nb</em>
 <a class="jxr_linenumber" name="L257" href="#L257">257</a> <em class="jxr_javadoccomment">     */</em>
 <a class="jxr_linenumber" name="L258" href="#L258">258</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> statusxml(ChannelHandlerContext ctx, <strong class="jxr_keyword">long</strong> nb, <strong class="jxr_keyword">boolean</strong> detail) {
-<a class="jxr_linenumber" name="L259" href="#L259">259</a>         Configuration.configuration.monitoring.run(nb, detail);
-<a class="jxr_linenumber" name="L260" href="#L260">260</a>         responseContent.append(Configuration.configuration.monitoring.exportXml(detail));
+<a class="jxr_linenumber" name="L259" href="#L259">259</a>         Configuration.configuration.getMonitoring().run(nb, detail);
+<a class="jxr_linenumber" name="L260" href="#L260">260</a>         responseContent.append(Configuration.configuration.getMonitoring().exportXml(detail));
 <a class="jxr_linenumber" name="L261" href="#L261">261</a>     }
 <a class="jxr_linenumber" name="L262" href="#L262">262</a> 
 <a class="jxr_linenumber" name="L263" href="#L263">263</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> statusjson(ChannelHandlerContext ctx, <strong class="jxr_keyword">long</strong> nb, <strong class="jxr_keyword">boolean</strong> detail) {
-<a class="jxr_linenumber" name="L264" href="#L264">264</a>         Configuration.configuration.monitoring.run(nb, detail);
-<a class="jxr_linenumber" name="L265" href="#L265">265</a>         responseContent.append(Configuration.configuration.monitoring.exportJson(detail));
+<a class="jxr_linenumber" name="L264" href="#L264">264</a>         Configuration.configuration.getMonitoring().run(nb, detail);
+<a class="jxr_linenumber" name="L265" href="#L265">265</a>         responseContent.append(Configuration.configuration.getMonitoring().exportJson(detail));
 <a class="jxr_linenumber" name="L266" href="#L266">266</a>     }
 <a class="jxr_linenumber" name="L267" href="#L267">267</a> 
 <a class="jxr_linenumber" name="L268" href="#L268">268</a>     <em class="jxr_javadoccomment">/**</em>
@@ -391,7 +391,7 @@
 <a class="jxr_linenumber" name="L383" href="#L383">383</a>     @Override
 <a class="jxr_linenumber" name="L384" href="#L384">384</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> channelActive(ChannelHandlerContext ctx) <strong class="jxr_keyword">throws</strong> Exception {
 <a class="jxr_linenumber" name="L385" href="#L385">385</a>         logger.debug(<span class="jxr_string">"Connected"</span>);
-<a class="jxr_linenumber" name="L386" href="#L386">386</a>         authentHttp.getAuth().specialNoSessionAuth(false, Configuration.configuration.HOST_ID);
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>         authentHttp.getAuth().specialNoSessionAuth(false, Configuration.configuration.getHOST_ID());
 <a class="jxr_linenumber" name="L387" href="#L387">387</a>         <strong class="jxr_keyword">super</strong>.channelActive(ctx);
 <a class="jxr_linenumber" name="L388" href="#L388">388</a>         ChannelGroup group = Configuration.configuration.getHttpChannelGroup();
 <a class="jxr_linenumber" name="L389" href="#L389">389</a>         <strong class="jxr_keyword">if</strong> (group != <strong class="jxr_keyword">null</strong>) {
@@ -401,6 +401,6 @@
 <a class="jxr_linenumber" name="L393" href="#L393">393</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2009&#x2013;2015 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2009&#x2013;2016 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
 </body>
 </html>

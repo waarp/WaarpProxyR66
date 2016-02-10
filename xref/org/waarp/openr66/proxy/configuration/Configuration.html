@@ -67,17 +67,17 @@
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>      @Override
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> computeNbThreads() {
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>          <strong class="jxr_keyword">int</strong> nb = Runtime.getRuntime().availableProcessors() + 1;
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>          SERVER_THREAD = nb;
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>          CLIENT_THREAD = SERVER_THREAD + 1;
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>          RUNNER_THREAD = 10;
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>          setSERVER_THREAD(nb);
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>          setCLIENT_THREAD(getSERVER_THREAD() + 1);
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>          setRUNNER_THREAD(10);
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>      }
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>      @Override
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> serverStartup() {
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>          isServer = <strong class="jxr_keyword">true</strong>;
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>          shutdownConfiguration.timeout = TIMEOUTCON;
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>          setServer(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>          getShutdownConfiguration().timeout = getTIMEOUTCON();
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>          R66ShutdownHook.addShutdownHook();
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>          <strong class="jxr_keyword">if</strong> ((!useNOSSL) &amp;&amp; (!useSSL)) {
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>          <strong class="jxr_keyword">if</strong> ((!isUseNOSSL()) &amp;&amp; (!isUseSSL())) {
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>              logger.error(<span class="jxr_string">"OpenR66 has neither NOSSL nor SSL support included! Stop here!"</span>);
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>              System.exit(-1);
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>          }
@@ -94,15 +94,15 @@
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>  
 <a class="jxr_linenumber" name="L87" href="#L87">87</a>      @Override
 <a class="jxr_linenumber" name="L88" href="#L88">88</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> r66Startup() {
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>          logger.debug(<span class="jxr_string">"Start R66: "</span> + SERVER_PORT + <span class="jxr_string">":"</span> + useNOSSL + <span class="jxr_string">" "</span> + SERVER_SSLPORT + <span class="jxr_string">":"</span>
-<a class="jxr_linenumber" name="L90" href="#L90">90</a>                  + useSSL + <span class="jxr_string">":"</span> + HOST_SSLID);
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>          logger.debug(<span class="jxr_string">"Start R66: "</span> + getSERVER_PORT() + <span class="jxr_string">":"</span> + isUseNOSSL() + <span class="jxr_string">" "</span> + getSERVER_SSLPORT() + <span class="jxr_string">":"</span>
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>                  + isUseSSL() + <span class="jxr_string">":"</span> + getHOST_SSLID());
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>          <em class="jxr_comment">// add into configuration</em>
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>          <strong class="jxr_keyword">this</strong>.constraintLimitHandler.setServer(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>          <strong class="jxr_keyword">this</strong>.getConstraintLimitHandler().setServer(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="L93" href="#L93">93</a>          <em class="jxr_comment">// Global Server</em>
 <a class="jxr_linenumber" name="L94" href="#L94">94</a>          serverChannelGroup = <strong class="jxr_keyword">new</strong> DefaultChannelGroup(<span class="jxr_string">"OpenR66"</span>, subTaskGroup.next());
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>          <strong class="jxr_keyword">if</strong> (useNOSSL) {
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>          <strong class="jxr_keyword">if</strong> (isUseNOSSL()) {
 <a class="jxr_linenumber" name="L96" href="#L96">96</a>              serverBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap();
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>              WaarpNettyUtil.setServerBootstrap(serverBootstrap, bossGroup, workerGroup, (<strong class="jxr_keyword">int</strong>) TIMEOUTCON);
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>              WaarpNettyUtil.setServerBootstrap(serverBootstrap, bossGroup, workerGroup, (<strong class="jxr_keyword">int</strong>) getTIMEOUTCON());
 <a class="jxr_linenumber" name="L98" href="#L98">98</a>              networkServerInitializer = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/NetworkServerInitializer.html">NetworkServerInitializer</a>(<strong class="jxr_keyword">true</strong>);
 <a class="jxr_linenumber" name="L99" href="#L99">99</a>              serverBootstrap.childHandler(networkServerInitializer);
 <a class="jxr_linenumber" name="L100" href="#L100">100</a>             <em class="jxr_comment">// FIXME take into account multiple address</em>
@@ -123,9 +123,9 @@
 <a class="jxr_linenumber" name="L115" href="#L115">115</a>             logger.warn(Messages.getString(<span class="jxr_string">"Configuration.NOSSLDeactivated"</span>)); <em class="jxr_comment">//$NON-NLS-1$</em>
 <a class="jxr_linenumber" name="L116" href="#L116">116</a>         }
 <a class="jxr_linenumber" name="L117" href="#L117">117</a> 
-<a class="jxr_linenumber" name="L118" href="#L118">118</a>         <strong class="jxr_keyword">if</strong> (useSSL &amp;&amp; HOST_SSLID != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>         <strong class="jxr_keyword">if</strong> (isUseSSL() &amp;&amp; getHOST_SSLID() != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L119" href="#L119">119</a>             serverSslBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap();
-<a class="jxr_linenumber" name="L120" href="#L120">120</a>             WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, bossGroup, workerGroup, (<strong class="jxr_keyword">int</strong>) TIMEOUTCON);
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>             WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, bossGroup, workerGroup, (<strong class="jxr_keyword">int</strong>) getTIMEOUTCON());
 <a class="jxr_linenumber" name="L121" href="#L121">121</a>             networkSslServerInitializer = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerInitializer.html">NetworkSslServerInitializer</a>(false);
 <a class="jxr_linenumber" name="L122" href="#L122">122</a>             serverSslBootstrap.childHandler(networkSslServerInitializer);
 <a class="jxr_linenumber" name="L123" href="#L123">123</a>             <em class="jxr_comment">// FIXME take into account multiple address</em>
@@ -148,28 +148,28 @@
 <a class="jxr_linenumber" name="L140" href="#L140">140</a>         }
 <a class="jxr_linenumber" name="L141" href="#L141">141</a> 
 <a class="jxr_linenumber" name="L142" href="#L142">142</a>         <em class="jxr_comment">// Factory for TrafficShapingHandler</em>
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>         globalTrafficShapingHandler = <strong class="jxr_keyword">new</strong> GlobalTrafficHandler(subTaskGroup, serverGlobalWriteLimit,
-<a class="jxr_linenumber" name="L144" href="#L144">144</a>                 serverGlobalReadLimit, serverChannelWriteLimit, serverChannelReadLimit, delayLimit);
-<a class="jxr_linenumber" name="L145" href="#L145">145</a>         <strong class="jxr_keyword">this</strong>.constraintLimitHandler.setHandler(globalTrafficShapingHandler);
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>         globalTrafficShapingHandler = <strong class="jxr_keyword">new</strong> GlobalTrafficHandler(subTaskGroup, getServerGlobalWriteLimit(),
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>                 getServerGlobalReadLimit(), getServerChannelWriteLimit(), getServerChannelReadLimit(), getDelayLimit());
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>         <strong class="jxr_keyword">this</strong>.getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);
 <a class="jxr_linenumber" name="L146" href="#L146">146</a>         ProxyBridge.initialize();
 <a class="jxr_linenumber" name="L147" href="#L147">147</a>         localTransaction = <strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/network/LocalTransaction.html">LocalTransaction</a>();
-<a class="jxr_linenumber" name="L148" href="#L148">148</a>         thriftService = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>         setThriftService(<strong class="jxr_keyword">null</strong>);
 <a class="jxr_linenumber" name="L149" href="#L149">149</a>     }
 <a class="jxr_linenumber" name="L150" href="#L150">150</a> 
 <a class="jxr_linenumber" name="L151" href="#L151">151</a>     @Override
 <a class="jxr_linenumber" name="L152" href="#L152">152</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> startHttpSupport() {
 <a class="jxr_linenumber" name="L153" href="#L153">153</a>         <em class="jxr_comment">// Now start the HTTP support</em>
-<a class="jxr_linenumber" name="L154" href="#L154">154</a>         logger.info(Messages.getString(<span class="jxr_string">"Configuration.HTTPStart"</span>) + SERVER_HTTPPORT + <em class="jxr_comment">//$NON-NLS-1$</em>
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>                 <span class="jxr_string">" HTTPS: "</span> + SERVER_HTTPSPORT);
+<a class="jxr_linenumber" name="L154" href="#L154">154</a>         logger.info(Messages.getString(<span class="jxr_string">"Configuration.HTTPStart"</span>) + getSERVER_HTTPPORT() + <em class="jxr_comment">//$NON-NLS-1$</em>
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>                 <span class="jxr_string">" HTTPS: "</span> + getSERVER_HTTPSPORT());
 <a class="jxr_linenumber" name="L156" href="#L156">156</a>         httpChannelGroup = <strong class="jxr_keyword">new</strong> DefaultChannelGroup(<span class="jxr_string">"HttpOpenR66"</span>, subTaskGroup.next());
 <a class="jxr_linenumber" name="L157" href="#L157">157</a>         <em class="jxr_comment">// Configure the server.</em>
 <a class="jxr_linenumber" name="L158" href="#L158">158</a>         httpBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap();
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>         WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpBossGroup, httpWorkerGroup, (<strong class="jxr_keyword">int</strong>) TIMEOUTCON);
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>         WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpBossGroup, httpWorkerGroup, (<strong class="jxr_keyword">int</strong>) getTIMEOUTCON());
 <a class="jxr_linenumber" name="L160" href="#L160">160</a>         <em class="jxr_comment">// Set up the event pipeline factory.</em>
-<a class="jxr_linenumber" name="L161" href="#L161">161</a>         httpBootstrap.childHandler(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/protocol/http/HttpInitializer.html">HttpInitializer</a>(useHttpCompression));
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>         httpBootstrap.childHandler(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/protocol/http/HttpInitializer.html">HttpInitializer</a>(isUseHttpCompression()));
 <a class="jxr_linenumber" name="L162" href="#L162">162</a>         <em class="jxr_comment">// Bind and start to accept incoming connections.</em>
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>         <strong class="jxr_keyword">if</strong> (SERVER_HTTPPORT &gt; 0) {
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>             ChannelFuture future = httpBootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(SERVER_HTTPPORT)).awaitUninterruptibly();
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>         <strong class="jxr_keyword">if</strong> (getSERVER_HTTPPORT() &gt; 0) {
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>             ChannelFuture future = httpBootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(getSERVER_HTTPPORT())).awaitUninterruptibly();
 <a class="jxr_linenumber" name="L165" href="#L165">165</a>             <strong class="jxr_keyword">if</strong> (future.isSuccess()) {
 <a class="jxr_linenumber" name="L166" href="#L166">166</a>                 httpChannelGroup.add(future.channel());
 <a class="jxr_linenumber" name="L167" href="#L167">167</a>             }
@@ -178,11 +178,11 @@
 <a class="jxr_linenumber" name="L170" href="#L170">170</a>         <em class="jxr_comment">// Configure the server.</em>
 <a class="jxr_linenumber" name="L171" href="#L171">171</a>         httpsBootstrap = <strong class="jxr_keyword">new</strong> ServerBootstrap();
 <a class="jxr_linenumber" name="L172" href="#L172">172</a>         <em class="jxr_comment">// Set up the event pipeline factory.</em>
-<a class="jxr_linenumber" name="L173" href="#L173">173</a>         WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpBossGroup, httpWorkerGroup, (<strong class="jxr_keyword">int</strong>) TIMEOUTCON);
-<a class="jxr_linenumber" name="L174" href="#L174">174</a>         httpsBootstrap.childHandler(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/protocol/http/adminssl/HttpSslInitializer.html">HttpSslInitializer</a>(useHttpCompression, false));
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpBossGroup, httpWorkerGroup, (<strong class="jxr_keyword">int</strong>) getTIMEOUTCON());
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>         httpsBootstrap.childHandler(<strong class="jxr_keyword">new</strong> <a href="../../../../../org/waarp/openr66/proxy/protocol/http/adminssl/HttpSslInitializer.html">HttpSslInitializer</a>(isUseHttpCompression()));
 <a class="jxr_linenumber" name="L175" href="#L175">175</a>         <em class="jxr_comment">// Bind and start to accept incoming connections.</em>
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>         <strong class="jxr_keyword">if</strong> (SERVER_HTTPSPORT &gt; 0) {
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>             ChannelFuture future = httpsBootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(SERVER_HTTPSPORT)).awaitUninterruptibly();
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>         <strong class="jxr_keyword">if</strong> (getSERVER_HTTPSPORT() &gt; 0) {
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>             ChannelFuture future = httpsBootstrap.bind(<strong class="jxr_keyword">new</strong> InetSocketAddress(getSERVER_HTTPSPORT())).awaitUninterruptibly();
 <a class="jxr_linenumber" name="L178" href="#L178">178</a>             <strong class="jxr_keyword">if</strong> (future.isSuccess()) {
 <a class="jxr_linenumber" name="L179" href="#L179">179</a>                 httpChannelGroup.add(future.channel());
 <a class="jxr_linenumber" name="L180" href="#L180">180</a>             }
@@ -198,6 +198,6 @@
 <a class="jxr_linenumber" name="L190" href="#L190">190</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2009&#x2013;2015 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2009&#x2013;2016 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
 </body>
 </html>
