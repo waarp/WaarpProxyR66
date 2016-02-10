@@ -53,18 +53,18 @@ public class NetworkSslServerInitializer extends
         if (isClient) {
             // Not server: no clientAuthent, no renegotiation
             sslHandler =
-                    waarpSslContextFactory.initInitializer(false, false);
+                    getWaarpSslContextFactory().initInitializer(false, false);
         } else {
             // Server: no renegotiation still, but possible clientAuthent
             sslHandler =
-                    waarpSslContextFactory.initInitializer(true,
-                            waarpSslContextFactory.needClientAuthentication());
+                    getWaarpSslContextFactory().initInitializer(true,
+                            getWaarpSslContextFactory().needClientAuthentication());
         }
         pipeline.addLast("ssl", sslHandler);
 
         pipeline.addLast("codec", new NetworkPacketCodec());
         pipeline.addLast(NetworkServerInitializer.TIMEOUT,
-                new IdleStateHandler(0, 0, Configuration.configuration.TIMEOUTCON, TimeUnit.MILLISECONDS));
+                new IdleStateHandler(0, 0, Configuration.configuration.getTIMEOUTCON(), TimeUnit.MILLISECONDS));
         GlobalTrafficHandler handler = Configuration.configuration
                 .getGlobalTrafficShapingHandler();
         if (handler != null) {
