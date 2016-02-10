@@ -71,8 +71,8 @@ public class NetworkSslServerHandler extends NetworkServerHandler {
             sslHandler.handshakeFuture().addListener(new GenericFutureListener<Future<? super Channel>>() {
                 public void operationComplete(Future<? super Channel> future) throws Exception {
                     if (!future.isSuccess()) {
-                        if (Configuration.configuration.r66Mib != null) {
-                            Configuration.configuration.r66Mib.notifyError(
+                        if (Configuration.configuration.getR66Mib() != null) {
+                            Configuration.configuration.getR66Mib().notifyError(
                                     "SSL Connection Error", "During Handshake");
                         }
                     }

@@ -59,17 +59,17 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
     @Override
     public void computeNbThreads() {
         int nb = Runtime.getRuntime().availableProcessors() + 1;
-        SERVER_THREAD = nb;
-        CLIENT_THREAD = SERVER_THREAD + 1;
-        RUNNER_THREAD = 10;
+        setSERVER_THREAD(nb);
+        setCLIENT_THREAD(getSERVER_THREAD() + 1);
+        setRUNNER_THREAD(10);
     }
 
     @Override
     public void serverStartup() {
-        isServer = true;
-        shutdownConfiguration.timeout = TIMEOUTCON;
+        setServer(true);
+        getShutdownConfiguration().timeout = getTIMEOUTCON();
         R66ShutdownHook.addShutdownHook();
-        if ((!useNOSSL) && (!useSSL)) {
+        if ((!isUseNOSSL()) && (!isUseSSL())) {
             logger.error("OpenR66 has neither NOSSL nor SSL support included! Stop here!");
             System.exit(-1);
         }
@@ -86,15 +86,15 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 
     @Override
     public void r66Startup() {
-        logger.debug("Start R66: " + SERVER_PORT + ":" + useNOSSL + " " + SERVER_SSLPORT + ":"
-                + useSSL + ":" + HOST_SSLID);
+        logger.debug("Start R66: " + getSERVER_PORT() + ":" + isUseNOSSL() + " " + getSERVER_SSLPORT() + ":"
+                + isUseSSL() + ":" + getHOST_SSLID());
         // add into configuration
-        this.constraintLimitHandler.setServer(true);
+        this.getConstraintLimitHandler().setServer(true);
         // Global Server
         serverChannelGroup = new DefaultChannelGroup("OpenR66", subTaskGroup.next());
-        if (useNOSSL) {
+        if (isUseNOSSL()) {
             serverBootstrap = new ServerBootstrap();
-            WaarpNettyUtil.setServerBootstrap(serverBootstrap, bossGroup, workerGroup, (int) TIMEOUTCON);
+            WaarpNettyUtil.setServerBootstrap(serverBootstrap, bossGroup, workerGroup, (int) getTIMEOUTCON());
             networkServerInitializer = new NetworkServerInitializer(true);
             serverBootstrap.childHandler(networkServerInitializer);
             // FIXME take into account multiple address
@@ -115,9 +115,9 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
             logger.warn(Messages.getString("Configuration.NOSSLDeactivated")); //$NON-NLS-1$
         }
 
-        if (useSSL && HOST_SSLID != null) {
+        if (isUseSSL() && getHOST_SSLID() != null) {
             serverSslBootstrap = new ServerBootstrap();
-            WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, bossGroup, workerGroup, (int) TIMEOUTCON);
+            WaarpNettyUtil.setServerBootstrap(serverSslBootstrap, bossGroup, workerGroup, (int) getTIMEOUTCON());
             networkSslServerInitializer = new NetworkSslServerInitializer(false);
             serverSslBootstrap.childHandler(networkSslServerInitializer);
             // FIXME take into account multiple address
@@ -140,28 +140,28 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
         }
 
         // Factory for TrafficShapingHandler
-        globalTrafficShapingHandler = new GlobalTrafficHandler(subTaskGroup, serverGlobalWriteLimit,
-                serverGlobalReadLimit, serverChannelWriteLimit, serverChannelReadLimit, delayLimit);
-        this.constraintLimitHandler.setHandler(globalTrafficShapingHandler);
+        globalTrafficShapingHandler = new GlobalTrafficHandler(subTaskGroup, getServerGlobalWriteLimit(),
+                getServerGlobalReadLimit(), getServerChannelWriteLimit(), getServerChannelReadLimit(), getDelayLimit());
+        this.getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);
         ProxyBridge.initialize();
         localTransaction = new LocalTransaction();
-        thriftService = null;
+        setThriftService(null);
     }
 
     @Override
     public void startHttpSupport() {
         // Now start the HTTP support
-        logger.info(Messages.getString("Configuration.HTTPStart") + SERVER_HTTPPORT + //$NON-NLS-1$
-                " HTTPS: " + SERVER_HTTPSPORT);
+        logger.info(Messages.getString("Configuration.HTTPStart") + getSERVER_HTTPPORT() + //$NON-NLS-1$
+                " HTTPS: " + getSERVER_HTTPSPORT());
         httpChannelGroup = new DefaultChannelGroup("HttpOpenR66", subTaskGroup.next());
         // Configure the server.
         httpBootstrap = new ServerBootstrap();
-        WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpBossGroup, httpWorkerGroup, (int) TIMEOUTCON);
+        WaarpNettyUtil.setServerBootstrap(httpBootstrap, httpBossGroup, httpWorkerGroup, (int) getTIMEOUTCON());
         // Set up the event pipeline factory.
-        httpBootstrap.childHandler(new HttpInitializer(useHttpCompression));
+        httpBootstrap.childHandler(new HttpInitializer(isUseHttpCompression()));
         // Bind and start to accept incoming connections.
-        if (SERVER_HTTPPORT > 0) {
-            ChannelFuture future = httpBootstrap.bind(new InetSocketAddress(SERVER_HTTPPORT)).awaitUninterruptibly();
+        if (getSERVER_HTTPPORT() > 0) {
+            ChannelFuture future = httpBootstrap.bind(new InetSocketAddress(getSERVER_HTTPPORT())).awaitUninterruptibly();
             if (future.isSuccess()) {
                 httpChannelGroup.add(future.channel());
             }
@@ -170,11 +170,11 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
         // Configure the server.
         httpsBootstrap = new ServerBootstrap();
         // Set up the event pipeline factory.
-        WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpBossGroup, httpWorkerGroup, (int) TIMEOUTCON);
-        httpsBootstrap.childHandler(new HttpSslInitializer(useHttpCompression, false));
+        WaarpNettyUtil.setServerBootstrap(httpsBootstrap, httpBossGroup, httpWorkerGroup, (int) getTIMEOUTCON());
+        httpsBootstrap.childHandler(new HttpSslInitializer(isUseHttpCompression()));
         // Bind and start to accept incoming connections.
-        if (SERVER_HTTPSPORT > 0) {
-            ChannelFuture future = httpsBootstrap.bind(new InetSocketAddress(SERVER_HTTPSPORT)).awaitUninterruptibly();
+        if (getSERVER_HTTPSPORT() > 0) {
+            ChannelFuture future = httpsBootstrap.bind(new InetSocketAddress(getSERVER_HTTPSPORT())).awaitUninterruptibly();
             if (future.isSuccess()) {
                 httpChannelGroup.add(future.channel());
             }

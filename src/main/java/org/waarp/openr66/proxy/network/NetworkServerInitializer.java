@@ -44,7 +44,7 @@ public class NetworkServerInitializer extends
     protected void initChannel(SocketChannel ch) throws Exception {
         final ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast("codec", new NetworkPacketCodec());
-        pipeline.addLast(TIMEOUT, new IdleStateHandler(0, 0, Configuration.configuration.TIMEOUTCON,
+        pipeline.addLast(TIMEOUT, new IdleStateHandler(0, 0, Configuration.configuration.getTIMEOUTCON(),
                 TimeUnit.MILLISECONDS));
         GlobalTrafficHandler handler =
                 Configuration.configuration.getGlobalTrafficShapingHandler();

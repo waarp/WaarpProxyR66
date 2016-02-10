@@ -23,11 +23,12 @@ import java.util.HashMap;
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolSystemException;
 
 /**
+ * Proxy Entry
  * @author "Frederic Bregier"
  * 
  */
 public class ProxyEntry {
-    public static HashMap<String, ProxyEntry> proxyEntries = new HashMap<String, ProxyEntry>();
+    public static final HashMap<String, ProxyEntry> proxyEntries = new HashMap<String, ProxyEntry>();
 
     private String name;
     private SocketAddress localSocketAddress;

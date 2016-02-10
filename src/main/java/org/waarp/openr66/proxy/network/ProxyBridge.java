@@ -68,7 +68,7 @@ public class ProxyBridge {
 
     public boolean waitForRemoteConnection() {
         try {
-            this.futureRemoteConnected.await(Configuration.configuration.TIMEOUTCON);
+            this.futureRemoteConnected.await(Configuration.configuration.getTIMEOUTCON());
         } catch (InterruptedException e) {
         }
         if (!this.futureRemoteConnected.isSuccess()) {
