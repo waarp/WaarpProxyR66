@@ -18,6 +18,8 @@
 package org.waarp.openr66.proxy.configuration;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -30,7 +32,6 @@ import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.networkhandler.GlobalTrafficHandler;
 import org.waarp.openr66.protocol.utils.R66ShutdownHook;
-import org.waarp.openr66.proxy.network.LocalTransaction;
 import org.waarp.openr66.proxy.network.NetworkServerInitializer;
 import org.waarp.openr66.proxy.network.ProxyBridge;
 import org.waarp.openr66.proxy.network.ProxyEntry;
@@ -86,8 +87,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
 
     @Override
     public void r66Startup() {
-        logger.debug("Start R66: " + getSERVER_PORT() + ":" + isUseNOSSL() + " " + getSERVER_SSLPORT() + ":"
-                + isUseSSL() + ":" + getHOST_SSLID());
+        logger.debug("Start R66: " + getHOST_SSLID());
         // add into configuration
         this.getConstraintLimitHandler().setServer(true);
         // Global Server
@@ -98,16 +98,22 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
             networkServerInitializer = new NetworkServerInitializer(true);
             serverBootstrap.childHandler(networkServerInitializer);
             // FIXME take into account multiple address
+            List<ChannelFuture> futures = new ArrayList<ChannelFuture>();
             for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
                 if (!entry.isLocalSsl()) {
-                    ChannelFuture future = serverBootstrap.bind(entry.getLocalSocketAddress()).awaitUninterruptibly();
-                    if (future.isSuccess()) {
-                        bindNoSSL = future.channel();
-                        serverChannelGroup.add(bindNoSSL);
-                    } else {
-                        logger.warn(Messages.getString("Configuration.NOSSLDeactivated")
-                                + " for " + entry.getLocalSocketAddress()); //$NON-NLS-1$
-                    }
+                    logger.debug("Future Activation: " + entry.getLocalSocketAddress());
+                    futures.add(serverBootstrap.bind(entry.getLocalSocketAddress()));
+                }
+            }
+            for (ChannelFuture future : futures) {
+                future.syncUninterruptibly();
+                if (future.isSuccess()) {
+                    bindNoSSL = future.channel();
+                    serverChannelGroup.add(bindNoSSL);
+                    logger.debug("Activation: " + bindNoSSL.localAddress());
+                } else {
+                    logger.warn(Messages.getString("Configuration.NOSSLDeactivated")
+                            + " for " + bindNoSSL.localAddress()); //$NON-NLS-1$
                 }
             }
         } else {
@@ -121,17 +127,22 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
             networkSslServerInitializer = new NetworkSslServerInitializer(false);
             serverSslBootstrap.childHandler(networkSslServerInitializer);
             // FIXME take into account multiple address
+            List<ChannelFuture> futures = new ArrayList<ChannelFuture>();
             for (ProxyEntry entry : ProxyEntry.proxyEntries.values()) {
                 if (entry.isLocalSsl()) {
-                    ChannelFuture future = serverSslBootstrap.bind(entry.getLocalSocketAddress())
-                            .awaitUninterruptibly();
-                    if (future.isSuccess()) {
-                        bindSSL = future.channel();
-                        serverChannelGroup.add(bindSSL);
-                    } else {
-                        logger.warn(Messages.getString("Configuration.SSLMODEDeactivated")
-                                + " for " + entry.getLocalSocketAddress()); //$NON-NLS-1$
-                    }
+                    logger.debug("Future SslActivation: " + entry.getLocalSocketAddress());
+                    futures.add(serverSslBootstrap.bind(entry.getLocalSocketAddress()));
+                }
+            }
+            for (ChannelFuture future : futures) {
+                future.syncUninterruptibly();
+                if (future.isSuccess()) {
+                    bindSSL = future.channel();
+                    serverChannelGroup.add(bindSSL);
+                    logger.debug("SslActivation: " + bindSSL.localAddress());
+                } else {
+                    logger.warn(Messages.getString("Configuration.SSLMODEDeactivated")
+                            + " for " + bindSSL.localAddress()); //$NON-NLS-1$
                 }
             }
         } else {
@@ -144,7 +155,6 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
                 getServerGlobalReadLimit(), getServerChannelWriteLimit(), getServerChannelReadLimit(), getDelayLimit());
         this.getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);
         ProxyBridge.initialize();
-        localTransaction = new LocalTransaction();
         setThriftService(null);
     }
 
