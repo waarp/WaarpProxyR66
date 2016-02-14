@@ -884,6 +884,8 @@ public class FileBasedConfiguration {
 
     @SuppressWarnings("unchecked")
     private static boolean loadNetworkServer(Configuration config) {
+        config.setSERVER_PORT(0);
+        config.setSERVER_SSLPORT(0);
         XmlValue value = hashConfig.get(XML_SERVER_HTTPPORT);
         int httpport = 8066;
         if (value != null && (!value.isEmpty())) {
