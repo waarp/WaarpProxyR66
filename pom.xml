@@ -49,7 +49,7 @@
     <dependency>
     	<groupId>Waarp</groupId>
     	<artifactId>WaarpR66</artifactId>
-    	<version>3.0.6</version>
+    	<version>3.0.7</version>
     </dependency>
     <dependency>
     	<groupId>javasysmon</groupId>
@@ -74,6 +74,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>animal-sniffer-maven-plugin</artifactId>
+        <version>1.15</version>
         <configuration>
           <signature>
             <groupId>org.codehaus.mojo.signature</groupId>
@@ -172,6 +173,15 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.3</version>
+        <inherited>false</inherited>
+        <configuration>
+          <rulesUri>file:///${session.executionRootDirectory}/maven-version-rules.xml</rulesUri>
+        </configuration>
       </plugin>
     </plugins>
   </build>
