@@ -49,7 +49,7 @@
     <dependency>
     	<groupId>Waarp</groupId>
     	<artifactId>WaarpR66</artifactId>
-    	<version>3.0.10</version>
+    	<version>3.0.11</version>
     </dependency>
     <dependency>
     	<groupId>javasysmon</groupId>
@@ -60,7 +60,7 @@
     <dependency>
     	<groupId>Waarp</groupId>
     	<artifactId>WaarpSnmp</artifactId>
-    	<version>3.0.5</version>
+    	<version>3.0.6</version>
     	<optional>true</optional>
     </dependency>
   </dependencies>
