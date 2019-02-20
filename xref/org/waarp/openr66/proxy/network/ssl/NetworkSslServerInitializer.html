@@ -32,67 +32,66 @@
 <a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.ssl.SslHandler;
 <a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.timeout.IdleStateHandler;
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.traffic.ChannelTrafficShapingHandler;
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.protocol.networkhandler.GlobalTrafficHandler;
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.proxy.configuration.Configuration;
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.proxy.network.NetworkPacketCodec;
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.proxy.network.NetworkServerInitializer;
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>  
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <em class="jxr_javadoccomment"> * @author Frederic Bregier</em>
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <em class="jxr_javadoccomment"> * </em>
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerInitializer.html">NetworkSslServerInitializer</a> <strong class="jxr_keyword">extends</strong>
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>          org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer {
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>      <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <em class="jxr_javadoccomment">     * </em>
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <em class="jxr_javadoccomment">     * @param isClient</em>
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <em class="jxr_javadoccomment">     *            True if this Factory is to be used in Client mode</em>
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <em class="jxr_javadoccomment">     */</em>
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerInitializer.html">NetworkSslServerInitializer</a>(<strong class="jxr_keyword">boolean</strong> isClient) {
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>          <strong class="jxr_keyword">super</strong>(isClient);
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>      }
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>  
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> initChannel(SocketChannel ch) <strong class="jxr_keyword">throws</strong> Exception {
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>          <strong class="jxr_keyword">final</strong> ChannelPipeline pipeline = ch.pipeline();
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>          <em class="jxr_comment">// Add SSL handler first to encrypt and decrypt everything.</em>
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>          SslHandler sslHandler = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>          <strong class="jxr_keyword">if</strong> (isClient) {
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>              <em class="jxr_comment">// Not server: no clientAuthent, no renegotiation</em>
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>              sslHandler =
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>                      getWaarpSslContextFactory().initInitializer(false, false);
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>          } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>              <em class="jxr_comment">// Server: no renegotiation still, but possible clientAuthent</em>
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>              sslHandler =
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>                      getWaarpSslContextFactory().initInitializer(<strong class="jxr_keyword">true</strong>,
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>                              getWaarpSslContextFactory().needClientAuthentication());
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>          }
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>          pipeline.addLast(<span class="jxr_string">"ssl"</span>, sslHandler);
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>  
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>          pipeline.addLast(<span class="jxr_string">"codec"</span>, <strong class="jxr_keyword">new</strong> <a href="../../../../../../org/waarp/openr66/proxy/network/NetworkPacketCodec.html">NetworkPacketCodec</a>());
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>          pipeline.addLast(NetworkServerInitializer.TIMEOUT,
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>                  <strong class="jxr_keyword">new</strong> IdleStateHandler(0, 0, Configuration.configuration.getTIMEOUTCON(), TimeUnit.MILLISECONDS));
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>          GlobalTrafficHandler handler = Configuration.configuration
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>                  .getGlobalTrafficShapingHandler();
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>          <strong class="jxr_keyword">if</strong> (handler != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>              pipeline.addLast(NetworkServerInitializer.LIMIT, handler);
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>          }
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>          ChannelTrafficShapingHandler trafficChannel = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>          <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>              trafficChannel =
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>                      Configuration.configuration
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>                              .newChannelTrafficShapingHandler();
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>              pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel);
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>          } <strong class="jxr_keyword">catch</strong> (OpenR66ProtocolNoDataException e) {
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>          }
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>          pipeline.addLast(Configuration.configuration.getHandlerGroup(),
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>                  NetworkServerInitializer.HANDLER, <strong class="jxr_keyword">new</strong> <a href="../../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerHandler.html">NetworkSslServerHandler</a>(
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>                          !<strong class="jxr_keyword">this</strong>.isClient));
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>      }
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  }
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> io.netty.handler.traffic.GlobalTrafficShapingHandler;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.protocol.networkhandler.GlobalTrafficHandler;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.proxy.configuration.Configuration;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.proxy.network.NetworkPacketCodec;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> org.waarp.openr66.proxy.network.NetworkServerInitializer;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <em class="jxr_javadoccomment"> * @author Frederic Bregier</em>
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <em class="jxr_javadoccomment"> * </em>
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerInitializer.html">NetworkSslServerInitializer</a> <strong class="jxr_keyword">extends</strong>
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>          org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer {
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <em class="jxr_javadoccomment">     * </em>
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <em class="jxr_javadoccomment">     * @param isClient</em>
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <em class="jxr_javadoccomment">     *            True if this Factory is to be used in Client mode</em>
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerInitializer.html">NetworkSslServerInitializer</a>(<strong class="jxr_keyword">boolean</strong> isClient) {
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>          <strong class="jxr_keyword">super</strong>(isClient);
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>      }
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> initChannel(SocketChannel ch) <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>          <strong class="jxr_keyword">final</strong> ChannelPipeline pipeline = ch.pipeline();
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>          <em class="jxr_comment">// Add SSL handler first to encrypt and decrypt everything.</em>
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>          SslHandler sslHandler = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>          <strong class="jxr_keyword">if</strong> (isClient) {
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>              <em class="jxr_comment">// Not server: no clientAuthent, no renegotiation</em>
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>              sslHandler =
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>                      getWaarpSslContextFactory().initInitializer(false, false);
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>          } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>              <em class="jxr_comment">// Server: no renegotiation still, but possible clientAuthent</em>
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>              sslHandler =
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>                      getWaarpSslContextFactory().initInitializer(<strong class="jxr_keyword">true</strong>,
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>                              getWaarpSslContextFactory().needClientAuthentication());
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>          }
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>          pipeline.addLast(<span class="jxr_string">"ssl"</span>, sslHandler);
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>          pipeline.addLast(<span class="jxr_string">"codec"</span>, <strong class="jxr_keyword">new</strong> <a href="../../../../../../org/waarp/openr66/proxy/network/NetworkPacketCodec.html">NetworkPacketCodec</a>());
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>          pipeline.addLast(NetworkServerInitializer.TIMEOUT,
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>                  <strong class="jxr_keyword">new</strong> IdleStateHandler(0, 0, Configuration.configuration.getTIMEOUTCON(), TimeUnit.MILLISECONDS));
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>          GlobalTrafficShapingHandler handler =
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>                  Configuration.configuration.getGlobalTrafficShapingHandler();
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>          <strong class="jxr_keyword">if</strong> (handler != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>              pipeline.addLast(NetworkServerInitializer.LIMITGLOBAL, handler);
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>          }
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>          pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL,
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>                  <strong class="jxr_keyword">new</strong> ChannelTrafficShapingHandler(
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>                      Configuration.configuration.getServerChannelWriteLimit(),
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>                      Configuration.configuration.getServerChannelReadLimit(),
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>                      Configuration.configuration.getDelayLimit()));
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>          pipeline.addLast(Configuration.configuration.getHandlerGroup(),
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>                  NetworkServerInitializer.HANDLER, <strong class="jxr_keyword">new</strong> <a href="../../../../../../org/waarp/openr66/proxy/network/ssl/NetworkSslServerHandler.html">NetworkSslServerHandler</a>(
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>                          !<strong class="jxr_keyword">this</strong>.isClient));
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>      }
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>  }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2009&#x2013;2018 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2009&#x2013;2019 <a href="http://www.waarp.it">Waarp</a>. All rights reserved.</div>
 </body>
 </html>
