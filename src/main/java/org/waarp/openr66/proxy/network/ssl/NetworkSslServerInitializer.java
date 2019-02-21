@@ -24,6 +24,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.protocol.networkhandler.GlobalTrafficHandler;
@@ -65,19 +66,17 @@ public class NetworkSslServerInitializer extends
         pipeline.addLast("codec", new NetworkPacketCodec());
         pipeline.addLast(NetworkServerInitializer.TIMEOUT,
                 new IdleStateHandler(0, 0, Configuration.configuration.getTIMEOUTCON(), TimeUnit.MILLISECONDS));
-        GlobalTrafficHandler handler = Configuration.configuration
-                .getGlobalTrafficShapingHandler();
+
+        GlobalTrafficShapingHandler handler =
+                Configuration.configuration.getGlobalTrafficShapingHandler();
         if (handler != null) {
-            pipeline.addLast(NetworkServerInitializer.LIMIT, handler);
+            pipeline.addLast(NetworkServerInitializer.LIMITGLOBAL, handler);
         }
-        ChannelTrafficShapingHandler trafficChannel = null;
-        try {
-            trafficChannel =
-                    Configuration.configuration
-                            .newChannelTrafficShapingHandler();
-            pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel);
-        } catch (OpenR66ProtocolNoDataException e) {
-        }
+        pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL,
+                new ChannelTrafficShapingHandler(
+                    Configuration.configuration.getServerChannelWriteLimit(),
+                    Configuration.configuration.getServerChannelReadLimit(),
+                    Configuration.configuration.getDelayLimit()));
         pipeline.addLast(Configuration.configuration.getHandlerGroup(),
                 NetworkServerInitializer.HANDLER, new NetworkSslServerHandler(
                         !this.isClient));
