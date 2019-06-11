@@ -1,17 +1,17 @@
 /**
  * This file is part of Waarp Project.
- * 
+ *
  * Copyright 2009, Frederic Bregier, and individual contributors by the @author tags. See the
  * COPYRIGHT.txt in the distribution for a full listing of individual contributors.
- * 
+ *
  * All Waarp Project is free software: you can redistribute it and/or modify it under the terms of
  * the GNU General Public License as published by the Free Software Foundation, either version 3 of
  * the License, or (at your option) any later version.
- * 
+ *
  * Waarp is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
  * the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License along with Waarp . If not, see
  * <http://www.gnu.org/licenses/>.
  */
@@ -24,21 +24,21 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
-import org.waarp.openr66.protocol.networkhandler.GlobalTrafficHandler;
 import org.waarp.openr66.proxy.configuration.Configuration;
 import org.waarp.openr66.proxy.network.NetworkPacketCodec;
 import org.waarp.openr66.proxy.network.NetworkServerInitializer;
 
 /**
  * @author Frederic Bregier
- * 
+ *
  */
 public class NetworkSslServerInitializer extends
         org.waarp.openr66.protocol.networkhandler.ssl.NetworkSslServerInitializer {
     /**
-     * 
+     *
      * @param isClient
      *            True if this Factory is to be used in Client mode
      */
@@ -65,21 +65,18 @@ public class NetworkSslServerInitializer extends
         pipeline.addLast("codec", new NetworkPacketCodec());
         pipeline.addLast(NetworkServerInitializer.TIMEOUT,
                 new IdleStateHandler(0, 0, Configuration.configuration.getTIMEOUTCON(), TimeUnit.MILLISECONDS));
-        GlobalTrafficHandler handler = Configuration.configuration
+        GlobalTrafficShapingHandler handler = Configuration.configuration
                 .getGlobalTrafficShapingHandler();
         if (handler != null) {
-            pipeline.addLast(NetworkServerInitializer.LIMIT, handler);
+            pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, handler);
         }
         ChannelTrafficShapingHandler trafficChannel = null;
-        try {
-            trafficChannel =
-                    Configuration.configuration
-                            .newChannelTrafficShapingHandler();
-            pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel);
-        } catch (OpenR66ProtocolNoDataException e) {
-        }
+        trafficChannel =
+                Configuration.configuration
+                        .newChannelTrafficShapingHandler();
+        pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel);
         pipeline.addLast(Configuration.configuration.getHandlerGroup(),
-                NetworkServerInitializer.HANDLER, new NetworkSslServerHandler(
-                        !this.isClient));
+                NetworkServerInitializer.HANDLER,
+                new NetworkSslServerHandler(!this.isClient));
     }
 }
