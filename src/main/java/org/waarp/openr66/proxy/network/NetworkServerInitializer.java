@@ -24,6 +24,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 
 import org.waarp.openr66.protocol.exception.OpenR66ProtocolNoDataException;
 import org.waarp.openr66.proxy.configuration.Configuration;
@@ -50,15 +51,13 @@ public class NetworkServerInitializer extends
         GlobalTrafficShapingHandler handler =
                 Configuration.configuration.getGlobalTrafficShapingHandler();
         if (handler != null) {
-            pipeline.addLast(LIMITCHANNEL, handler);
+            pipeline.addLast(LIMITGLOBAL, handler);
         }
-        ChannelTrafficShapingHandler trafficChannel = null;
-        trafficChannel =
-                Configuration.configuration
-                        .newChannelTrafficShapingHandler();
-        if (trafficChannel != null) {
-            pipeline.addLast(LIMITCHANNEL, trafficChannel);
-        }
+        pipeline.addLast(LIMITCHANNEL,
+                new ChannelTrafficShapingHandler(
+                    Configuration.configuration.getServerChannelWriteLimit(),
+                    Configuration.configuration.getServerChannelReadLimit(),
+                    Configuration.configuration.getDelayLimit()));
         pipeline.addLast(Configuration.configuration.getHandlerGroup(),
                 HANDLER, new NetworkServerHandler(this.server));
     }

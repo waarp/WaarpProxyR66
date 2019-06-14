@@ -65,16 +65,16 @@ public class NetworkSslServerInitializer extends
         pipeline.addLast("codec", new NetworkPacketCodec());
         pipeline.addLast(NetworkServerInitializer.TIMEOUT,
                 new IdleStateHandler(0, 0, Configuration.configuration.getTIMEOUTCON(), TimeUnit.MILLISECONDS));
-        GlobalTrafficShapingHandler handler = Configuration.configuration
-                .getGlobalTrafficShapingHandler();
+        GlobalTrafficShapingHandler handler =
+                Configuration.configuration.getGlobalTrafficShapingHandler();
         if (handler != null) {
-            pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, handler);
+            pipeline.addLast(NetworkServerInitializer.LIMITGLOBAL, handler);
         }
-        ChannelTrafficShapingHandler trafficChannel = null;
-        trafficChannel =
-                Configuration.configuration
-                        .newChannelTrafficShapingHandler();
-        pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL, trafficChannel);
+        pipeline.addLast(NetworkServerInitializer.LIMITCHANNEL,
+                new ChannelTrafficShapingHandler(
+                    Configuration.configuration.getServerChannelWriteLimit(),
+                    Configuration.configuration.getServerChannelReadLimit(),
+                    Configuration.configuration.getDelayLimit()));
         pipeline.addLast(Configuration.configuration.getHandlerGroup(),
                 NetworkServerInitializer.HANDLER,
                 new NetworkSslServerHandler(!this.isClient));

@@ -151,10 +151,7 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
         }
 
         // Factory for TrafficShapingHandler
-        globalTrafficShapingHandler = new GlobalTrafficShapingHandler(
-                subTaskGroup, getServerGlobalWriteLimit(),
-                getServerGlobalReadLimit(), getDelayLimit());
-        this.getConstraintLimitHandler().setHandler(globalTrafficShapingHandler);
+        setupLimitHandler();
         ProxyBridge.initialize();
         setThriftService(null);
     }
