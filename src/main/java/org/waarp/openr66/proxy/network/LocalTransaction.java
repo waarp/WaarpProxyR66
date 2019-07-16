@@ -30,7 +30,6 @@ import org.waarp.openr66.protocol.utils.R66Future;
  */
 public class LocalTransaction extends org.waarp.openr66.protocol.localhandler.LocalTransaction {
 
-    @Override
     public LocalChannelReference createNewClient(NetworkChannelReference networkChannelReference,
             Integer remoteId, R66Future futureRequest) throws OpenR66ProtocolSystemException,
             OpenR66ProtocolRemoteShutdownException {
