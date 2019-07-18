@@ -29,6 +29,7 @@ import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import org.waarp.common.database.exception.WaarpDatabaseSqlException;
 import org.waarp.common.logging.WaarpLogger;
 import org.waarp.common.logging.WaarpLoggerFactory;
+import org.waarp.common.utility.DetectionUtils;
 import org.waarp.common.utility.WaarpNettyUtil;
 import org.waarp.openr66.protocol.configuration.Messages;
 import org.waarp.openr66.protocol.utils.R66ShutdownHook;
@@ -72,6 +73,9 @@ public class Configuration extends org.waarp.openr66.protocol.configuration.Conf
         R66ShutdownHook.addShutdownHook();
         if ((!isUseNOSSL()) && (!isUseSSL())) {
             logger.error("OpenR66 has neither NOSSL nor SSL support included! Stop here!");
+            if (DetectionUtils.isJunit()) {
+                return;
+            }
             System.exit(-1);
         }
         pipelineInit();

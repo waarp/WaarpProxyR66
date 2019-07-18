@@ -49,7 +49,7 @@
     <dependency>
     	<groupId>Waarp</groupId>
     	<artifactId>WaarpR66</artifactId>
-    	<version>3.1.0</version>
+    	<version>3.1.1</version>
     </dependency>
     <dependency>
     	<groupId>javasysmon</groupId>
@@ -60,8 +60,32 @@
     <dependency>
     	<groupId>Waarp</groupId>
     	<artifactId>WaarpSnmp</artifactId>
-    	<version>3.0.7</version>
+    	<version>3.1.0</version>
     	<optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>1.10.6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>Waarp</groupId>
+      <artifactId>WaarpDigest</artifactId>
+      <version>3.1.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <version>1.4.199</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <properties>
@@ -90,7 +114,7 @@
             <source>1.6</source>
             <target>1.6</target>
             <optimize>true</optimize>
-            <showDeprecations>true</showDeprecations>
+            <showDeprecation>true</showDeprecation>
           </configuration>
       </plugin>
       <plugin>
